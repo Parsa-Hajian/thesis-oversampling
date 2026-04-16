@@ -1,0 +1,326 @@
+% =============================================================================
+% Chapter 10 -- Statistical Analysis
+% =============================================================================
+
+\chapter{Statistical Analysis}
+\label{ch:statistical}
+
+This chapter presents a rigorous statistical analysis of the experimental results reported in Chapter~\ref{ch:results}.
+Following the recommendations of Dem\v{s}ar~\cite{demsar2006statistical} and Garc\'{i}a and Herrera~\cite{garcia2008extension}, we employ the Friedman test to assess whether statistically significant differences exist among the oversampling methods, and apply the Nemenyi post-hoc procedure to identify which specific method pairs differ.
+Non-parametric tests are preferred because the distribution of classification metrics across datasets is typically non-normal and the number of datasets ($N = 14$) is too small for parametric assumptions to hold reliably.
+
+
+% ============================================================================
+\section{Friedman Test Results}
+\label{sec:stat:friedman}
+
+For each performance metric, we rank the oversampling methods within each dataset (rank 1 = best) and compute the average ranks across all 14 datasets.
+The Friedman test assesses the null hypothesis $H_0$: all methods have equal average ranks.
+
+For each dataset and metric, scores are averaged across all 7 classifiers, then the $k=13$ methods are ranked 1 (best) to 13 (worst); ties receive the mean of tied ranks.
+Average ranks across all 14 datasets are shown in Table~\ref{tab:stat:ranks_all}.
+
+\begin{table}[H]
+\centering
+\caption{Average ranks across 14 datasets for all four metrics (lower rank = better). $k=13$, $N=14$.}
+\label{tab:stat:ranks_all}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Method} & \textbf{F1} & \textbf{G-Mean} & \textbf{AUC} & \textbf{BAcc} \\
+\midrule
+None       & 5.57 & 7.32 & 7.89 & 7.25 \\
+ROS        & 7.79 & 6.32 & 8.18 & 6.11 \\
+SMOTE      & 6.07 & 4.75 & 6.14 & 4.29 \\
+B-SMOTE    & 8.71 & 6.71 & 7.36 & 6.93 \\
+ADASYN     & 7.39 & 5.93 & 5.68 & 6.00 \\
+SVM-SMOTE  & 6.93 & 2.96 & 5.00 & 3.18 \\
+KM-SMOTE   & 5.89 & 5.86 & 4.64 & 5.86 \\
+Circ-SMOTE & 6.43 & 8.00 & 7.18 & 7.82 \\
+\midrule
+GVM-CO     & 7.36 & 8.57 & 7.68 & 8.86 \\
+GVM-CO-CC  & 8.18 & 9.32 & 8.21 & 9.14 \\
+LRE-CO     & 6.14 & 8.43 & 7.75 & 8.32 \\
+LS-CO (G)  & 7.29 & 8.39 & 8.29 & 8.68 \\
+LS-CO (C)  & 7.25 & 8.43 & 7.00 & 8.57 \\
+\midrule
+$\chi_F^2$ & 9.90 & 37.38 & 18.06 & 38.90 \\
+$p$-value  & 0.6251 & 0.0002 & 0.1139 & 0.0001 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Summary of Friedman Tests}
+
+\begin{table}[H]
+\centering
+\caption{Summary of Friedman test results across all metrics. $k = 13$ methods, $N = 14$ datasets, $\alpha = 0.05$.}
+\label{tab:stat:friedman_summary}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Metric} & \textbf{$\chi_F^2$} & \textbf{$p$-value} & \textbf{Reject $H_0$?} \\
+\midrule
+F1-score       & 9.90  & 0.6251     & No \\
+G-Mean         & 37.38 & 0.0002     & Yes \\
+AUC            & 18.06 & 0.1139     & No \\
+Balanced Acc.  & 38.90 & 0.0001     & Yes \\
+Precision      & 70.85 & $<$0.0001  & Yes \\
+Sensitivity    & 79.09 & $<$0.0001  & Yes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The Friedman test rejects $H_0$ for G-Mean, Balanced Accuracy, Precision, and Sensitivity, indicating significant performance differences among the methods for these metrics.
+For F1-score ($p = 0.6251$) and AUC ($p = 0.1139$), the null hypothesis is not rejected.
+
+\subsection{Statistical Power Analysis}
+\label{sec:stat:power}
+
+A non-rejected Friedman test does not establish equivalence; it establishes that the test lacked sufficient power to detect the differences present.
+The Nemenyi critical difference $\mathrm{CD} = 4.55$ at $N=14$, $k=13$ means that only rank differences exceeding 35\% of the entire rank scale are detectable at $\alpha = 0.05$.
+Using the sample-size formula of Dem\v{s}ar~\cite{demsar2006statistical}, the approximate power for detecting a uniform rank improvement of 2 positions at $\alpha = 0.05$ is approximately 30\%.
+To achieve 80\% power, approximately $N \geq 45$ datasets would be required.
+
+\textbf{Interpretation.}
+All non-significant results — particularly for F1-score and AUC — should be read as \emph{underpowered null results}, not as evidence that the methods are equivalent.
+The observed F1 differences (range: 0.8842--0.8990, spread of 0.015) are real but too small relative to inter-dataset variability to be detected with 14 datasets.
+Future evaluations on larger dataset collections would substantially increase statistical resolution.
+
+
+% ============================================================================
+\section{Nemenyi Post-Hoc Comparisons}
+\label{sec:stat:holm}
+
+When the Friedman test rejects $H_0$, we apply the Nemenyi post-hoc procedure to identify which specific pairs of methods differ significantly.
+
+The Nemenyi critical difference is computed as:
+\begin{equation}
+    \mathrm{CD} = q_\alpha \sqrt{\frac{k(k+1)}{6N}},
+\end{equation}
+where $k = 13$ is the number of methods, $N = 14$ is the number of datasets, and $q_\alpha = 3.0941$ at $\alpha = 0.05$.
+This gives:
+\begin{equation}
+    \mathrm{CD} = 3.0941 \times \sqrt{\frac{13 \times 14}{6 \times 14}} = 4.5544.
+\end{equation}
+
+\subsection{Pairwise Comparisons for G-Mean}
+
+\begin{table}[H]
+\centering
+\caption{Nemenyi-adjusted $p$-values for pairwise comparisons (G-Mean). Significant differences ($p < 0.05$) are marked with $\dagger$.}
+\label{tab:stat:nemenyi_gmean}
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Comparison} & \textbf{$|R_i - R_j|$} & \textbf{$p_{\mathrm{adj}}$} & \\
+\midrule
+GVM-CO vs.\ SVM-SMOTE    & 5.6071 & 0.0090 & $\dagger$ \\
+GVM-CO-CC vs.\ SVM-SMOTE & 6.3571 & 0.0011 & $\dagger$ \\
+LRE-CO vs.\ SVM-SMOTE    & 5.4643 & 0.0129 & $\dagger$ \\
+LS-CO (G) vs.\ SVM-SMOTE & 5.4286 & 0.0141 & $\dagger$ \\
+LS-CO (C) vs.\ SVM-SMOTE & 5.4643 & 0.0129 & $\dagger$ \\
+\midrule
+GVM-CO vs.\ SMOTE        & 3.8214 & 0.3124 & \\
+GVM-CO vs.\ None         & 1.2500 & 0.9998 & \\
+LRE-CO vs.\ SMOTE        & 3.6786 & 0.3749 & \\
+LRE-CO vs.\ KM-SMOTE     & 2.5714 & 0.8753 & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The only statistically significant pairwise differences involve SVM-SMOTE, which significantly outperforms all proposed circular methods on G-Mean.
+No proposed method significantly outperforms any baseline.
+
+\subsection{Pairwise Comparisons for Balanced Accuracy}
+
+\begin{table}[H]
+\centering
+\caption{Selected Nemenyi-adjusted $p$-values for pairwise comparisons (Balanced Accuracy).}
+\label{tab:stat:nemenyi_bacc}
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Comparison} & \textbf{$|R_i - R_j|$} & \textbf{$p_{\mathrm{adj}}$} & \\
+\midrule
+GVM-CO vs.\ SVM-SMOTE    & 5.6786 & 0.0075 & $\dagger$ \\
+GVM-CO-CC vs.\ SVM-SMOTE & 5.9643 & 0.0035 & $\dagger$ \\
+LRE-CO vs.\ SVM-SMOTE    & 5.1429 & 0.0278 & $\dagger$ \\
+LS-CO (G) vs.\ SVM-SMOTE & 5.5000 & 0.0118 & $\dagger$ \\
+LS-CO (C) vs.\ SVM-SMOTE & 5.3929 & 0.0154 & $\dagger$ \\
+\midrule
+GVM-CO vs.\ SMOTE        & 4.5714 & 0.0923 & \\
+LRE-CO vs.\ SMOTE        & 4.0357 & 0.2304 & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Wilcoxon Signed-Rank Tests for Targeted Comparisons}
+\label{sec:stat:wilcoxon}
+
+As noted by Dem\v{s}ar~\cite{demsar2006statistical}, the Nemenyi test is appropriate for all-pairs comparisons but is more conservative than the Wilcoxon signed-rank test for targeted pairwise comparisons.
+We apply the Wilcoxon signed-rank test with Holm correction to the key comparisons of interest: each proposed method against SVM-SMOTE on G-Mean.
+
+\begin{table}[H]
+\centering
+\caption{Wilcoxon signed-rank test $p$-values (Holm-corrected) for pairwise comparisons with SVM-SMOTE on G-Mean (14 dataset-level observations). Significant ($p < 0.05$) marked $\dagger$.}
+\label{tab:stat:wilcoxon}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Comparison} & \textbf{$W$ statistic} & \textbf{$p$ (raw)} & \textbf{$p$ (Holm)} \\
+\midrule
+GVM-CO vs.\ SVM-SMOTE    & 7.0  & 0.0063 & 0.0126 $\dagger$ \\
+GVM-CO-CC vs.\ SVM-SMOTE & 4.0  & 0.0022 & 0.0088 $\dagger$ \\
+LRE-CO vs.\ SVM-SMOTE    & 14.0 & 0.0391 & 0.0391 $\dagger$ \\
+LS-CO (G) vs.\ SVM-SMOTE & 11.0 & 0.0261 & 0.0391 $\dagger$ \\
+LS-CO (C) vs.\ SVM-SMOTE & 10.0 & 0.0216 & 0.0391 $\dagger$ \\
+\midrule
+LRE-CO vs.\ SMOTE        & 22.0 & 0.2139 & 0.2139 \\
+LRE-CO vs.\ KM-SMOTE     & 25.0 & 0.3203 & 0.3203 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The Wilcoxon test corroborates the Nemenyi findings: all proposed circular methods are significantly outperformed by SVM-SMOTE on G-Mean ($p < 0.05$ after Holm correction).
+LRE-CO is not significantly different from SMOTE ($p = 0.214$) or KM-SMOTE ($p = 0.320$).
+
+
+% ============================================================================
+\section{Nemenyi Critical Difference Diagrams}
+\label{sec:stat:nemenyi}
+
+Figures~\ref{fig:stat:cd_f1}--\ref{fig:stat:cd_auc} show the CD diagrams for F1, G-Mean, and AUC respectively (CD $= 4.55$ at $\alpha=0.05$).
+For G-Mean and Balanced Accuracy, SVM-SMOTE occupies the best average rank and is significantly different from all proposed methods; the circular methods cluster in ranks 8--9.
+For F1 and AUC, the Friedman test does not reject $H_0$, so rank differences should not be interpreted as statistically reliable.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/cd_f_measure.pdf}
+\caption{CD diagram for F1-score ($p = 0.6251$, $H_0$ not rejected).}
+\label{fig:stat:cd_f1}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/cd_g_mean.pdf}
+\caption{CD diagram for G-Mean ($p = 0.0002$). SVM-SMOTE (rank 2.96) significantly outperforms all proposed methods.}
+\label{fig:stat:cd_gmean}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/cd_auc.pdf}
+\caption{CD diagram for AUC ($p = 0.1139$, $H_0$ not rejected).}
+\label{fig:stat:cd_auc}
+\end{figure}
+
+
+% ============================================================================
+\section{Per-Classifier Statistical Analysis}
+\label{sec:stat:per_classifier}
+
+\begin{table}[H]
+\centering
+\caption{Friedman test $p$-values per classifier (F1-score). Significant at $\alpha = 0.05$ marked with $\dagger$.}
+\label{tab:stat:per_clf}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Classifier} & \textbf{$\chi_F^2$} & \textbf{$p$-value} \\
+\midrule
+KNN           & 32.40 & 0.0012 $\dagger$ \\
+SVM-RBF       & 16.82 & 0.1564 \\
+Decision Tree & 21.10 & 0.0489 $\dagger$ \\
+Random Forest & 29.05 & 0.0039 $\dagger$ \\
+Naive Bayes   & 24.18 & 0.0193 $\dagger$ \\
+MLP           & 19.52 & 0.0771 \\
+Logistic Reg. & 22.67 & 0.0306 $\dagger$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This per-classifier analysis reveals that method differences are significant for KNN, Random Forest, Decision Tree, Naive Bayes, and Logistic Regression, while SVM-RBF and MLP do not show significant method-level differences.
+This suggests that the oversampling strategy matters more for distance-based and tree-based learners than for margin-based or neural network classifiers on these benchmarks.
+
+
+% ============================================================================
+\section{Effect Size Analysis}
+\label{sec:stat:effect_size}
+
+Beyond statistical significance, we assess the practical significance of performance differences using Cliff's delta ($\delta$):
+\begin{equation}
+    \delta = \frac{|\{(i, j) : x_i > y_j\}| - |\{(i, j) : x_i < y_j\}|}{N^2},
+\end{equation}
+where $x_i$ and $y_j$ are the metric values for the two methods across datasets.
+Following standard thresholds, $|\delta| < 0.147$ indicates negligible effect, $0.147 \leq |\delta| < 0.33$ small, $0.33 \leq |\delta| < 0.474$ medium, and $|\delta| \geq 0.474$ large effect.
+
+\begin{table}[H]
+\centering
+\caption{Cliff's delta effect sizes for key comparisons (F1-score, aggregated over classifiers).}
+\label{tab:stat:effect_size}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Comparison} & \textbf{$\delta$} & \textbf{Interpretation} \\
+\midrule
+LRE-CO vs.\ SMOTE    & $-0.041$ & Negligible \\
+LRE-CO vs.\ KM-SMOTE & $-0.020$ & Negligible \\
+LRE-CO vs.\ GVM-CO   & $+0.122$ & Negligible \\
+GVM-CO vs.\ SMOTE    & $-0.163$ & Small (SMOTE better) \\
+GVM-CO vs.\ None     & $-0.184$ & Small (None better) \\
+LS-CO (G) vs.\ SMOTE & $-0.061$ & Negligible \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Effect sizes are generally small to negligible, consistent with the non-significant Friedman test for F1.
+This implies that while rankings differ across datasets, the practical magnitude of these differences is modest.
+
+
+% ============================================================================
+\section{Post-Hoc Analysis for Precision and Sensitivity}
+\label{sec:stat:prec_sens}
+
+\begin{table}[H]
+\centering
+\caption{Average ranks for Precision and Sensitivity across 14 datasets (lower = better).}
+\label{tab:stat:prec_sens_ranks}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Method} & \textbf{Avg.\ Precision Rank} & \textbf{Avg.\ Sensitivity Rank} \\
+\midrule
+None       & 2.143 & 10.857 \\
+ROS        & 9.500 & 3.357 \\
+SMOTE      & 7.286 & 5.857 \\
+B-SMOTE    & 5.929 & 8.143 \\
+ADASYN     & 9.714 & 4.571 \\
+SVM-SMOTE  & 4.929 & 7.214 \\
+KM-SMOTE   & 6.143 & 6.500 \\
+Circ-SMOTE & 3.929 & 8.929 \\
+\midrule
+GVM-CO     & 3.500 & 9.286 \\
+GVM-CO-CC  & 4.000 & 9.571 \\
+LRE-CO     & 4.071 & 8.286 \\
+LS-CO (G)  & 8.357 & 5.500 \\
+LS-CO (C)  & 7.500 & 7.929 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The Precision/Sensitivity trade-off is pronounced: ``None'' achieves the best average Precision rank (2.14) but worst Sensitivity rank (10.86) --- consistent with a majority-biased classifier.
+GVM-CO and GVM-CO-CC are among the top-ranked for Precision (ranks 3.5 and 4.0), reflecting their Von Mises directional bias that concentrates synthetic samples in dense minority regions.
+Conversely, LS-CO (G) achieves strong Sensitivity rank (5.50) due to its uniform radial coverage of the minority space.
+
+
+% ============================================================================
+\section{Chapter Summary}
+\label{sec:stat:summary}
+
+The key statistical findings are:
+\begin{itemize}[leftmargin=*]
+    \item The Friedman test rejects $H_0$ for G-Mean, Balanced Accuracy, Precision, and Sensitivity, but not for F1-score ($p = 0.6251$) or AUC ($p = 0.1139$).
+    Non-significant results should be interpreted as underpowered ($\approx 30\%$ power for a rank-2 effect at $N=14$), not as evidence of equivalence.
+    \item Post-hoc Nemenyi analysis identifies that SVM-SMOTE significantly outperforms all proposed circular methods on G-Mean and Balanced Accuracy.
+    No proposed method significantly outperforms any baseline.
+    \item The Nemenyi critical difference is $\mathrm{CD} = 4.55$ ($k = 13$, $N = 14$, $\alpha = 0.05$).
+    \item Per-classifier Friedman tests show that method differences are significant for KNN, DT, RF, NB, and LR, but not for SVM-RBF and MLP.
+    \item Effect sizes are negligible to small for F1 comparisons, indicating that while rank differences exist, practical performance gaps are modest.
+\end{itemize}
+
+The next chapter presents ablation studies that dissect the contribution of each algorithmic component.

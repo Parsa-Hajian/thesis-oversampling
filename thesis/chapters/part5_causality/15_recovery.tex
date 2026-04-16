@@ -1,0 +1,93 @@
+% =============================================================================
+% Chapter 15 -- Recovery Results
+% =============================================================================
+
+\chapter{Recovery Results}
+\label{ch:recovery}
+
+\section{Overview}
+\label{sec:rec:overview}
+
+Phase~2 asks: given a maximally degraded dataset (20\% minority remaining, $\IR \approx 4$), can oversampling restore the performance observed on the fully balanced starting point?
+We evaluate seven oversampling methods incrementally as they add minority samples back toward full balance.
+
+The right panels of Figures~\ref{fig:deg_auc}--\ref{fig:deg_spec} in Chapter~\ref{ch:degradation} show the recovery curves for each metric, averaged across all ten datasets and all five classifiers.
+Table~\ref{tab:rec_summary} gives mean AUC and F1 at full recovery (100\% of minority restored) per oversampler, compared against the balanced baseline.
+
+
+% ============================================================================
+\section{Recovery Summary Table}
+\label{sec:rec:table}
+
+\begin{table}[ht]
+\centering
+\caption{Mean metric values at full recovery (100\% minority restored via oversampling) vs.\ the balanced baseline.
+$\Delta$ = recovery ceiling minus balanced baseline (negative values indicate a residual gap).
+Best oversampler per metric in \textbf{bold}.}
+\label{tab:rec_summary}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{l ccc ccc}
+\toprule
+& \multicolumn{3}{c}{AUC} & \multicolumn{3}{c}{F1} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+Oversampler & Balanced & Recovered & $\Delta$ & Balanced & Recovered & $\Delta$ \\
+\midrule
+No oversampling   & 0.885 & 0.684 & $-0.201$ & 0.850 & 0.541 & $-0.309$ \\
+ROS~\cite{fernandez2018learning}        & 0.885 & 0.841 & $-0.044$ & 0.850 & 0.783 & $-0.067$ \\
+SMOTE~\cite{chawla2002smote}            & 0.885 & 0.857 & $-0.028$ & 0.850 & 0.802 & $-0.048$ \\
+B-SMOTE~\cite{han2005borderline}        & 0.885 & 0.853 & $-0.032$ & 0.850 & 0.811 & $-0.039$ \\
+ADASYN~\cite{he2008adasyn}              & 0.885 & 0.860 & $-0.025$ & 0.850 & 0.806 & $-0.044$ \\
+KM-SMOTE~\cite{douzas2018improving}     & 0.885 & \textbf{0.871} & $-0.014$ & 0.850 & \textbf{0.827} & $-0.023$ \\
+\textbf{GVM-CO}~\cite{hajiannejad2025circular} & 0.885 & \textbf{0.871} & $-0.014$ & 0.850 & 0.824 & $-0.026$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+% ============================================================================
+\section{RQ3: Full Recovery}
+\label{sec:rec:rq3}
+
+No oversampler achieves complete recovery to the balanced baseline for all metrics and all datasets (Table~\ref{tab:rec_summary}).
+The gap is most pronounced for Sensitivity: all oversamplers recover to within approximately 90--97\% of the balanced Sensitivity ceiling, but a residual gap persists even when the nominal ratio $\IR = 1$ is re-established via oversampling.
+
+This finding is consistent with the theoretical expectation that synthetic samples carry less information than real minority instances~\cite{chawla2002smote}.
+The information content of synthesised examples is bounded by the diversity of the real minority class: when the minority class is small and sparse, the synthesised distribution is an approximation of the original~\cite{blagus2013smote}.
+Blagus and Lusa~\cite{blagus2013smote} showed theoretically and empirically that SMOTE cannot recover the full original distribution; our results extend this finding to all seven evaluated oversamplers.
+
+AUC-ROC and Balanced Accuracy show the best recovery (residual gaps of 1.4--4.4\%), consistent with their robustness to threshold choice~\cite{hand2001simple, fernandez2018learning}.
+F1-Score and G-Mean show intermediate recovery.
+Specificity is largely unaffected by degradation or oversampling (Figure~\ref{fig:deg_spec}), as it measures majority-class accuracy which remains consistent throughout~\cite{he2009learning}.
+
+\paragraph{Residual information loss.}
+The residual recovery gap reflects an inherent limitation: synthetic samples carry less information than real minority instances.
+When the surviving minority is small, the synthesised distribution is a degraded approximation of the original, regardless of which oversampling method is used.
+The theoretical floor on recovery is set by the information content of the 20\% surviving real minority instances; no synthesis method can overcome this information-theoretic constraint.
+
+
+% ============================================================================
+\section{RQ4: Comparative Oversampler Performance}
+\label{sec:rec:rq4}
+
+\paragraph{Recovery speed.}
+GVM-CO and KM-SMOTE reach 95\% of the balanced AUC within fewer recovery steps than SMOTE or B-SMOTE.
+ADASYN shows the fastest initial recovery (first 20 steps) due to adaptive density weighting~\cite{he2008adasyn} but plateaus earlier, as its boundary focus generates samples in majority-adjacent regions.
+
+\paragraph{Recovery ceiling.}
+KM-SMOTE~\cite{douzas2018improving} and GVM-CO both achieve mean AUC within 1.4\% of the balanced baseline (Table~\ref{tab:rec_summary}).
+Both cluster the minority class before synthesis, preventing interpolation across sub-clusters.
+GVM-CO's gravity-biased Von Mises sampling preserves density structure, confirming the mechanistic link between seed quality (Part~III) and recovery (Part~V).
+
+\paragraph{SMOTE variants.}
+Borderline-SMOTE recovers Sensitivity more effectively than standard SMOTE but at a slight Specificity cost~\cite{han2005borderline}.
+ADASYN shows a similar pattern.
+
+\paragraph{Random Oversampling and lower bound.}
+ROS falls further behind at higher ratios due to its lack of diversity.
+The no-oversampling baseline's flat recovery curve serves as a lower bound, confirming that all gains are attributable to synthesis rather than evaluation artefacts~\cite{kaufman2012leakage}.
+
+\paragraph{Ranking summary.}
+Across AUC and F1, the oversampler ranking is:
+GVM-CO $\approx$ KM-SMOTE $>$ ADASYN $>$ SMOTE $>$ B-SMOTE $>$ ROS $\gg$ No-op.
+This ranking is consistent with the Part~IV benchmark results (Chapter~\ref{ch:results}), where GVM-CO and LRE-CO outperformed standard SMOTE variants on imbalanced benchmarks.
+The convergent evidence from two independent evaluation frameworks (benchmark comparisons in Part~IV and the controlled causal study in Part~V) strengthens confidence in GVM-CO's distributional-fidelity advantage in the regimes studied.

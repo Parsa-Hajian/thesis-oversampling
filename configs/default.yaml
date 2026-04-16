@@ -1,0 +1,78 @@
+# Default hyperparameters for all algorithms
+# ============================================
+
+random_state: 42
+
+# --- Benchmark Circular-SMOTE ---
+circular_smote:
+  k: 5
+  sampling_strategy: 1.0
+  use_pca: true            # false → operate in original d-D feature space
+
+# --- Algorithm 1: Global Gravity + Von Mises ---
+gravity_vonmises:
+  K: 3                    # number of minority clusters
+  k_nn: 5                 # for local scale computation
+  k_seed: 5               # for neighbor pairing
+  kappa_max: 20.0          # maximum Von Mises concentration
+  gamma: 2.0               # score-to-kappa exponent
+  alpha: 0.6               # mean vs joint blending
+  sampling_strategy: 1.0
+  clustering_method: "kmeans"     # "kmeans" or "hac"
+  cross_cluster: false            # Variation B: border restriction
+  denoise_method: null            # null, "tomek", "enn", "dbscan"
+  use_pca: true            # false → vMF-biased d-D hyperball sampling
+
+# --- Algorithm 2: Local Regions ---
+local_regions:
+  k_seed: 10
+  N_min: 8
+  local_k_max: 6
+  min_points_per_cluster: 15
+  beta: 1.7
+  certainty_threshold: 0.80
+  sampling_strategy: 1.0
+  clustering_method: "kmeans"
+  denoise_method: null
+  use_pca: true            # false → certainty check and Voronoi in d-D
+
+# --- Algorithm 3: Layered Segmental ---
+layered_segmental:
+  n_layers: 60
+  sigma: 0.03
+  ang_std: 0.05
+  use_outlier_removal: true
+  outlier_keep_frac: 0.95
+  sampling_strategy: 1.0
+  cluster_based: false     # true for cluster-based variation
+  K: 3                     # number of clusters (if cluster_based)
+  clustering_method: "kmeans"
+  denoise_method: null
+  use_pca: true            # false → d-D hypersphere with volume-uniform layers
+
+# --- Seed Selection ---
+seed_selection:
+  method: "custom"         # "custom" or "gaussian"
+  n_candidates: 100        # number of random candidate sets
+  n_pcs: 2                 # PCA components for scoring
+  k_topo: 5                # k for topological similarity
+
+# --- Evaluation ---
+evaluation:
+  cv_folds: 5
+  metrics:
+    - auc
+    - g_mean
+    - f_measure
+    - balanced_accuracy
+    - precision
+    - sensitivity
+  classifiers:
+    - knn
+    - decision_tree
+    - svm_rbf
+    - naive_bayes
+    - mlp
+    - logistic_regression
+    - random_forest
+  k_grid: [3, 5, 7, 9, 11]   # for KNN K optimization

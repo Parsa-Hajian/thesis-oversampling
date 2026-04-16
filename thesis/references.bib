@@ -1,0 +1,1347 @@
+% =============================================================================
+%  references.bib — Integrated Thesis (merged from all three works)
+%  Works merged:
+%    A: NHOP paper (nhop/paper/references.bib)
+%    B: Circular Oversampling thesis (circular-oversampling/thesis/references.bib)
+%    C: Imbalance Causality thesis (imbalance-causality/thesis/references.bib)
+%
+%  Deduplication policy: CO thesis version preferred for overlapping keys
+%  (most complete metadata). NHOP-unique and IC-unique entries appended.
+% =============================================================================
+
+
+% =============================================================================
+% FOUNDATIONAL OVERSAMPLING
+% =============================================================================
+
+@article{chawla2002smote,
+  author    = {Chawla, Nitesh V. and Bowyer, Kevin W. and Hall, Lawrence O. and Kegelmeyer, W. Philip},
+  title     = {{SMOTE}: Synthetic Minority Over-sampling Technique},
+  journal   = {Journal of Artificial Intelligence Research},
+  volume    = {16},
+  pages     = {321--357},
+  year      = {2002},
+  doi       = {10.1613/jair.953}
+}
+
+@inproceedings{han2005borderline,
+  author    = {Han, Hui and Wang, Wen-Yuan and Mao, Bing-Huan},
+  title     = {Borderline-{SMOTE}: A New Over-Sampling Method in Imbalanced Data Sets Learning},
+  booktitle = {Advances in Intelligent Computing (ICIC 2005)},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {3644},
+  pages     = {878--887},
+  year      = {2005},
+  publisher = {Springer},
+  doi       = {10.1007/11538059_91}
+}
+
+@inproceedings{he2008adasyn,
+  author    = {He, Haibo and Bai, Yang and Garcia, Edwardo A. and Li, Shutao},
+  title     = {{ADASYN}: Adaptive Synthetic Sampling Approach for Imbalanced Learning},
+  booktitle = {IEEE International Joint Conference on Neural Networks (IJCNN)},
+  pages     = {1322--1328},
+  year      = {2008},
+  publisher = {IEEE},
+  doi       = {10.1109/IJCNN.2008.4633969}
+}
+
+@article{he2009learning,
+  author    = {He, Haibo and Garcia, Edwardo A.},
+  title     = {Learning from Imbalanced Data},
+  journal   = {IEEE Transactions on Knowledge and Data Engineering},
+  volume    = {21},
+  number    = {9},
+  pages     = {1263--1284},
+  year      = {2009},
+  doi       = {10.1109/TKDE.2008.239}
+}
+
+@inproceedings{bunkhumpornpat2009safe,
+  author    = {Bunkhumpornpat, Chumphol and Sinapiromsaran, Krung and Lursinsap, Chidchanok},
+  title     = {Safe-Level-{SMOTE}: Safe-Level-Synthetic Minority Over-Sampling Technique for Handling the Class Imbalanced Problem},
+  booktitle = {Advances in Knowledge Discovery and Data Mining (PAKDD 2009)},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {5476},
+  pages     = {475--482},
+  year      = {2009},
+  publisher = {Springer},
+  doi       = {10.1007/978-3-642-01307-2_43}
+}
+
+@article{nguyen2011borderline,
+  author    = {Nguyen, Hien M. and Cooper, Eric W. and Kamei, Katsuari},
+  title     = {Borderline Over-Sampling for Imbalanced Data Classification},
+  journal   = {International Journal of Knowledge Engineering and Soft Data Paradigms},
+  volume    = {3},
+  number    = {1},
+  pages     = {4--21},
+  year      = {2011},
+  doi       = {10.1504/IJKESDP.2011.039875}
+}
+
+@article{batista2004study,
+  author    = {Batista, Gustavo E. A. P. A. and Prati, Ronaldo C. and Monard, Maria Carolina},
+  title     = {A Study of the Behavior of Several Methods for Balancing Machine Learning Training Data},
+  journal   = {ACM SIGKDD Explorations Newsletter},
+  volume    = {6},
+  number    = {1},
+  pages     = {20--29},
+  year      = {2004},
+  doi       = {10.1145/1007730.1007735}
+}
+
+
+% =============================================================================
+% SMOTE VARIANTS
+% =============================================================================
+
+@article{saez2015smote,
+  author    = {S{\'a}ez, Jos{\'e} A. and Luengo, Juli{\'a}n and Stefanowski, Jerzy and Herrera, Francisco},
+  title     = {{SMOTE--IPF}: Addressing the Noisy and Borderline Examples Problem in Imbalanced Classification by a Re-Sampling Method with Filtering},
+  journal   = {Information Sciences},
+  volume    = {291},
+  pages     = {184--203},
+  year      = {2015},
+  doi       = {10.1016/j.ins.2014.08.051}
+}
+
+@inproceedings{maciejewski2011local,
+  author    = {Maciejewski, Tomasz and Stefanowski, Jerzy},
+  title     = {Local Neighbourhood Extension of {SMOTE} for Mining Imbalanced Data},
+  booktitle = {IEEE Symposium on Computational Intelligence and Data Mining (CIDM)},
+  pages     = {104--111},
+  year      = {2011},
+  publisher = {IEEE},
+  doi       = {10.1109/CIDM.2011.5949434}
+}
+
+@article{barua2014mwmote,
+  author    = {Barua, Sukarna and Islam, Md. Monirul and Yao, Xin and Murase, Kazuyuki},
+  title     = {{MWMOTE}---Majority Weighted Minority Oversampling Technique for Imbalanced Data Set Learning},
+  journal   = {IEEE Transactions on Knowledge and Data Engineering},
+  volume    = {26},
+  number    = {2},
+  pages     = {405--425},
+  year      = {2014},
+  doi       = {10.1109/TKDE.2012.232}
+}
+
+@inproceedings{barua2013prowsyn,
+  author    = {Barua, Sukarna and Islam, Md. Monirul and Murase, Kazuyuki},
+  title     = {{ProWSyn}: Proximity Weighted Synthetic Oversampling Technique for Imbalanced Data Set Learning},
+  booktitle = {Advances in Knowledge Discovery and Data Mining (PAKDD 2013)},
+  pages     = {317--328},
+  year      = {2013},
+  publisher = {Springer}
+}
+
+@article{sharma2022swim,
+  author    = {Sharma, Shikha and Colin, Jean-No{\"e}l and Bhatt, Manoj Kumar},
+  title     = {{SWIM}: Selectively Weighted Instance-based Method for Oversampling Imbalanced Data},
+  journal   = {Knowledge-Based Systems},
+  volume    = {250},
+  pages     = {108994},
+  year      = {2022},
+  doi       = {10.1016/j.knosys.2022.108994}
+}
+
+@article{bej2021loras,
+  author    = {Bej, Saptarshi and Davtyan, Narek and Wolfien, Markus and Nassar, Mohamed and Wolkenhauer, Olaf},
+  title     = {{LoRAS}: An Oversampling Approach for Imbalanced Datasets},
+  journal   = {Machine Learning},
+  volume    = {110},
+  number    = {2},
+  pages     = {279--301},
+  year      = {2021},
+  doi       = {10.1007/s10994-020-05913-4}
+}
+
+@article{fernandez2018smote,
+  author    = {Fern{\'a}ndez, Alberto and Garcia, Salvador and Herrera, Francisco and Chawla, Nitesh V.},
+  title     = {{SMOTE} for Learning from Imbalanced Data: Progress and Challenges, Marking the 15-year Anniversary},
+  journal   = {Journal of Artificial Intelligence Research},
+  volume    = {61},
+  pages     = {863--905},
+  year      = {2018},
+  doi       = {10.1613/jair.1.11192}
+}
+
+
+% =============================================================================
+% CLUSTERING-BASED OVERSAMPLING
+% =============================================================================
+
+@article{douzas2018improving,
+  author    = {Douzas, Georgios and Bacao, Fernando and Last, Felix},
+  title     = {Improving Imbalanced Learning Through a Heuristic Oversampling Method Based on {K}-Means and {SMOTE}},
+  journal   = {Information Sciences},
+  volume    = {465},
+  pages     = {1--20},
+  year      = {2018},
+  doi       = {10.1016/j.ins.2018.06.056}
+}
+
+@article{xia2023ecebo,
+  author    = {Chen, Junfeng and Huang, Shuai and Jiang, Tao},
+  title     = {Enhanced Cluster-Based Evolutionary Balanced Oversampling for Imbalanced Classification},
+  journal   = {Applied Soft Computing},
+  volume    = {131},
+  pages     = {109733},
+  year      = {2022},
+  doi       = {10.1016/j.asoc.2022.109733}
+}
+
+@article{arefin2020hcc,
+  author    = {Arefin, Ahmed S. and Ferdaus, Md Meftahul and Ciesielski, Victor},
+  title     = {Hierarchical Clustering-Based Oversampling for Imbalanced Data},
+  journal   = {Knowledge-Based Systems},
+  volume    = {187},
+  pages     = {104862},
+  year      = {2020},
+  doi       = {10.1016/j.knosys.2019.104862}
+}
+
+@article{li2024knsmote,
+  author    = {Li, Jiaxuan and Chen, Hao and Zhang, Changqing},
+  title     = {{KNSMOTE}: K-Nearest Neighbour Filtered {SMOTE} for Imbalanced Classification},
+  journal   = {Expert Systems with Applications},
+  volume    = {249},
+  pages     = {123546},
+  year      = {2024}
+}
+
+@article{cao2011density,
+  author    = {Cao, Qiang and Ewing, Bradley T. and Thompson, Mark A.},
+  title     = {An Improved Oversampling Scheme for Imbalanced Datasets Based on Density Estimation},
+  journal   = {Neurocomputing},
+  volume    = {74},
+  number    = {12--13},
+  pages     = {2138--2147},
+  year      = {2011}
+}
+
+
+% =============================================================================
+% DISTRIBUTION-AWARE / GAN-BASED OVERSAMPLING
+% =============================================================================
+
+@article{guo2008kde,
+  author    = {Guo, Hongyu and Viktor, Herna L.},
+  title     = {Learning from Imbalanced Data Sets with Boosting and Data Generation: the {DataBoost-IM} Approach},
+  journal   = {ACM SIGKDD Explorations Newsletter},
+  volume    = {6},
+  number    = {1},
+  pages     = {30--39},
+  year      = {2004}
+}
+
+@article{lee2016gaussian,
+  author    = {Lee, Jaedong and Kim, Noo-ri and Lee, Jee-Hyong},
+  title     = {An Over-Sampling Technique with Rejection for Imbalanced Class Learning},
+  journal   = {International Journal of Fuzzy Logic and Intelligent Systems},
+  volume    = {17},
+  number    = {4},
+  pages     = {229--234},
+  year      = {2017}
+}
+
+@article{mullick2019generative,
+  author    = {Mullick, Sankha Subhra and Datta, Shounak and Das, Swagatam},
+  title     = {Generative Adversarial Minority Oversampling},
+  booktitle = {IEEE International Conference on Computer Vision (ICCV)},
+  pages     = {1695--1704},
+  year      = {2019}
+}
+
+@article{mariani2018bagan,
+  author    = {Mariani, Giovanni and Scheidegger, Florian and Istrate, Roxana and Bekas, Costas and Malossi, Cristiano},
+  title     = {{BAGAN}: Data Augmentation with Balancing {GAN}},
+  journal   = {arXiv preprint arXiv:1803.09655},
+  year      = {2018}
+}
+
+@article{douzas2018effective,
+  author    = {Douzas, Georgios and Bacao, Fernando},
+  title     = {Effective Data Generation for Imbalanced Learning Using Conditional Generative Adversarial Networks},
+  journal   = {Expert Systems with Applications},
+  volume    = {91},
+  pages     = {464--471},
+  year      = {2018}
+}
+
+@article{sharma2022survey,
+  author    = {Sharma, Shikha and Colin, Jean-No{\"e}l and Bhatt, Manoj Kumar},
+  title     = {A Survey on {GAN}-Based Oversampling for Imbalanced Data},
+  journal   = {Neural Computing and Applications},
+  volume    = {34},
+  pages     = {20597--20622},
+  year      = {2022}
+}
+
+@article{wan2017variational,
+  author    = {Wan, Zhonggen and Zhang, Yanqing and He, Haibo},
+  title     = {Variational Autoencoder Based Synthetic Data Generation for Imbalanced Learning},
+  booktitle = {IEEE Symposium Series on Computational Intelligence (SSCI)},
+  pages     = {1--7},
+  year      = {2017},
+  publisher = {IEEE}
+}
+
+
+% =============================================================================
+% GEOMETRIC OVERSAMPLING
+% =============================================================================
+
+@article{douzas2019geometric,
+  author    = {Douzas, Georgios and Bacao, Fernando},
+  title     = {Geometric {SMOTE}: A Geometrically Enhanced Drop-in Replacement for {SMOTE}},
+  journal   = {Information Sciences},
+  volume    = {501},
+  pages     = {118--135},
+  year      = {2019},
+  doi       = {10.1016/j.ins.2019.06.007}
+}
+
+@article{koziarski2020radial,
+  author    = {Koziarski, Micha{\l}},
+  title     = {Radial-Based Oversampling for Noisy Imbalanced Data Classification},
+  journal   = {Neurocomputing},
+  volume    = {343},
+  pages     = {19--33},
+  year      = {2020},
+  doi       = {10.1016/j.neucom.2018.04.089}
+}
+
+@article{bunkhumpornpat2012dbsmote,
+  author    = {Bunkhumpornpat, Chumphol and Sinapiromsaran, Krung and Lursinsap, Chidchanok},
+  title     = {{DBSMOTE}: Density-Based Synthetic Minority Over-sampling TEchnique},
+  journal   = {Applied Intelligence},
+  volume    = {36},
+  number    = {3},
+  pages     = {664--684},
+  year      = {2012},
+  doi       = {10.1007/s10489-011-0287-y}
+}
+
+
+% =============================================================================
+% VON MISES AND DIRECTIONAL STATISTICS
+% =============================================================================
+
+@book{mardia2000directional,
+  author    = {Mardia, Kanti V. and Jupp, Peter E.},
+  title     = {Directional Statistics},
+  publisher = {John Wiley \& Sons},
+  year      = {2000},
+  edition   = {2nd},
+  isbn      = {0471953334}
+}
+
+@article{best1979efficient,
+  author    = {Best, D. J. and Fisher, N. I.},
+  title     = {Efficient Simulation of the {V}on {M}ises Distribution},
+  journal   = {Journal of the Royal Statistical Society. Series C (Applied Statistics)},
+  volume    = {28},
+  number    = {2},
+  pages     = {152--157},
+  year      = {1979}
+}
+
+@article{wood1994simulation,
+  author    = {Wood, Andrew T. A.},
+  title     = {Simulation of the von {M}ises {F}isher Distribution},
+  journal   = {Communications in Statistics -- Simulation and Computation},
+  volume    = {23},
+  number    = {1},
+  pages     = {157--164},
+  year      = {1994},
+  publisher = {Taylor \& Francis}
+}
+
+
+% =============================================================================
+% STATISTICAL TESTING
+% =============================================================================
+
+@article{wilcoxon1945individual,
+  author    = {Wilcoxon, Frank},
+  title     = {Individual Comparisons by Ranking Methods},
+  journal   = {Biometrics Bulletin},
+  volume    = {1},
+  number    = {6},
+  pages     = {80--83},
+  year      = {1945},
+  doi       = {10.2307/3001968}
+}
+
+@article{barandela2003strategies,
+  author    = {Barandela, Ricardo and Valdovinos, Rosa M. and S{\'a}nchez, J. Salvador and Ferri, Francesc J.},
+  title     = {The Imbalanced Training Sample Problem: Under or Over Sampling?},
+  booktitle = {Structural, Syntactic, and Statistical Pattern Recognition},
+  journal   = {Lecture Notes in Computer Science},
+  volume    = {2396},
+  pages     = {806--814},
+  year      = {2003},
+  publisher = {Springer}
+}
+
+
+@article{demsar2006statistical,
+  author    = {Dem\v{s}ar, Janez},
+  title     = {Statistical Comparisons of Classifiers over Multiple Data Sets},
+  journal   = {Journal of Machine Learning Research},
+  volume    = {7},
+  pages     = {1--30},
+  year      = {2006}
+}
+
+@article{garcia2008extension,
+  author    = {Garc\'{\i}a, Salvador and Herrera, Francisco},
+  title     = {An Extension on ``Statistical Comparisons of Classifiers over Multiple Data Sets'' for All Pairwise Comparisons},
+  journal   = {Journal of Machine Learning Research},
+  volume    = {9},
+  pages     = {2677--2694},
+  year      = {2008}
+}
+
+@article{friedman1937use,
+  author    = {Friedman, Milton},
+  title     = {The Use of Ranks to Avoid the Assumption of Normality Implicit in the Analysis of Variance},
+  journal   = {Journal of the American Statistical Association},
+  volume    = {32},
+  number    = {200},
+  pages     = {675--701},
+  year      = {1937}
+}
+
+@article{holm1979simple,
+  author    = {Holm, Sture},
+  title     = {A Simple Sequentially Rejective Multiple Test Procedure},
+  journal   = {Scandinavian Journal of Statistics},
+  volume    = {6},
+  number    = {2},
+  pages     = {65--70},
+  year      = {1979}
+}
+
+@article{nemenyi1963distribution,
+  author    = {Nemenyi, Peter},
+  title     = {Distribution-Free Multiple Comparisons},
+  journal   = {Biometrics},
+  volume    = {18},
+  number    = {2},
+  pages     = {263},
+  year      = {1963}
+}
+
+
+% =============================================================================
+% IMBALANCED LEARNING SURVEYS AND BOOKS
+% =============================================================================
+
+@book{fernandez2018learning,
+  author    = {Fern{\'a}ndez, Alberto and Garc{\'{\i}}a, Salvador and Galar, Mikel and Prati, Ronaldo C. and Krawczyk, Bartosz and Herrera, Francisco},
+  title     = {Learning from Imbalanced Data Sets},
+  publisher = {Springer},
+  year      = {2018},
+  doi       = {10.1007/978-3-319-98074-4}
+}
+
+@article{branco2016survey,
+  author    = {Branco, Paula and Torgo, Lu\'{i}s and Ribeiro, Rita P.},
+  title     = {A Survey of Predictive Modeling on Imbalanced Domains},
+  journal   = {ACM Computing Surveys},
+  volume    = {49},
+  number    = {2},
+  pages     = {1--50},
+  year      = {2016},
+  doi       = {10.1145/2907070}
+}
+
+@article{krawczyk2016learning,
+  author    = {Krawczyk, Bartosz},
+  title     = {Learning from Imbalanced Data: Open Challenges and Future Directions},
+  journal   = {Progress in Artificial Intelligence},
+  volume    = {5},
+  number    = {4},
+  pages     = {221--232},
+  year      = {2016}
+}
+
+@article{haixiang2017learning,
+  author    = {Haixiang, Guo and Yijing, Li and Shang, Jennifer and Mingyun, Gu and Yuanyue, Huang and Bing, Gong},
+  title     = {Learning from Class-Imbalanced Data: Review of Methods and Applications},
+  journal   = {Expert Systems with Applications},
+  volume    = {73},
+  pages     = {220--239},
+  year      = {2017}
+}
+
+@article{galar2012review,
+  author    = {Galar, Mikel and Fern{\'a}ndez, Alberto and Barrenechea, Edurne and Bustince, Humberto and Herrera, Francisco},
+  title     = {A Review on Ensembles for the Class Imbalance Problem: Bagging-, Boosting-, and Hybrid-Based Approaches},
+  journal   = {IEEE Transactions on Systems, Man, and Cybernetics, Part C},
+  volume    = {42},
+  number    = {4},
+  pages     = {463--484},
+  year      = {2012},
+  doi       = {10.1109/TSMCC.2011.2161285}
+}
+
+
+% =============================================================================
+% CLASSIFIERS
+% =============================================================================
+
+@book{bishop2006pattern,
+  author    = {Bishop, Christopher M.},
+  title     = {Pattern Recognition and Machine Learning},
+  publisher = {Springer},
+  year      = {2006},
+  isbn      = {978-0-387-31073-2}
+}
+
+@article{cover1967nearest,
+  author    = {Cover, Thomas and Hart, Peter},
+  title     = {Nearest Neighbor Pattern Classification},
+  journal   = {IEEE Transactions on Information Theory},
+  volume    = {13},
+  number    = {1},
+  pages     = {21--27},
+  year      = {1967}
+}
+
+@article{cortes1995support,
+  author    = {Cortes, Corinna and Vapnik, Vladimir},
+  title     = {Support-Vector Networks},
+  journal   = {Machine Learning},
+  volume    = {20},
+  number    = {3},
+  pages     = {273--297},
+  year      = {1995}
+}
+
+@book{breiman1984classification,
+  author    = {Breiman, Leo and Friedman, Jerome and Stone, Charles J. and Olshen, Richard A.},
+  title     = {Classification and Regression Trees},
+  year      = {1984},
+  publisher = {CRC Press}
+}
+
+% breiman1984cart is an alias for the same work, kept for backward-compat with chapter refs
+@book{breiman1984cart,
+  author    = {Breiman, Leo and Friedman, Jerome H. and Olshen, Richard A. and Stone, Charles J.},
+  title     = {Classification and Regression Trees},
+  publisher = {Wadsworth \& Brooks/Cole},
+  year      = {1984}
+}
+
+@article{breiman2001random,
+  author    = {Breiman, Leo},
+  title     = {Random Forests},
+  journal   = {Machine Learning},
+  volume    = {45},
+  number    = {1},
+  pages     = {5--32},
+  year      = {2001}
+}
+
+@article{friedman2001greedy,
+  author    = {Friedman, Jerome H.},
+  title     = {Greedy Function Approximation: A Gradient Boosting Machine},
+  journal   = {Annals of Statistics},
+  volume    = {29},
+  number    = {5},
+  pages     = {1189--1232},
+  year      = {2001}
+}
+
+
+% =============================================================================
+% CLASSIFIER-IMBALANCE INTERACTIONS
+% =============================================================================
+
+@article{cieslak2012hellinger,
+  author    = {Cieslak, David A. and Hoens, T. Ryan and Chawla, Nitesh V. and Kegelmeyer, W. Philip},
+  title     = {Hellinger Distance Decision Trees Are Robust and Skew-Insensitive},
+  journal   = {Data Mining and Knowledge Discovery},
+  volume    = {24},
+  number    = {1},
+  pages     = {136--158},
+  year      = {2012},
+  doi       = {10.1007/s10618-011-0222-1}
+}
+
+@inproceedings{akbani2004applying,
+  author    = {Akbani, Rehan and Kwek, Stephen and Japkowicz, Nathalie},
+  title     = {Applying Support Vector Machines to Imbalanced Datasets},
+  booktitle = {European Conference on Machine Learning (ECML 2004)},
+  pages     = {39--50},
+  year      = {2004},
+  publisher = {Springer}
+}
+
+@article{buda2018systematic,
+  author    = {Buda, Mateusz and Maki, Atsuto and Mazurowski, Maciej A.},
+  title     = {A Systematic Study of the Class Imbalance Problem in Convolutional Neural Networks},
+  journal   = {Neural Networks},
+  volume    = {106},
+  pages     = {249--259},
+  year      = {2018},
+  doi       = {10.1016/j.neunet.2018.07.011}
+}
+
+@article{zhang2003knearest,
+  author    = {Zhang, Jianping and Mani, Inderjeet},
+  title     = {{KNN} Approach to Unbalanced Data Distributions: A Case Study Involving Information Extraction},
+  booktitle = {Proceedings of the ICML Workshop on Learning from Imbalanced Datasets},
+  year      = {2003}
+}
+
+
+% =============================================================================
+% CAUSALITY / EFFECT OF IMBALANCE
+% =============================================================================
+
+@article{japkowicz2002class,
+  author    = {Japkowicz, Nathalie and Stephen, Shaju},
+  title     = {The Class Imbalance Problem: A Systematic Study},
+  journal   = {Intelligent Data Analysis},
+  volume    = {6},
+  number    = {5},
+  pages     = {429--449},
+  year      = {2002},
+  doi       = {10.3233/IDA-2002-6504}
+}
+
+@article{weiss2003effect,
+  author    = {Weiss, Gary M. and Provost, Foster},
+  title     = {Learning When Training Data Are Costly: The Effect of Class Distribution on Tree Induction},
+  journal   = {Journal of Artificial Intelligence Research},
+  volume    = {19},
+  pages     = {315--354},
+  year      = {2003},
+  doi       = {10.1613/jair.1199}
+}
+
+@inproceedings{ling2004exploration,
+  author    = {Ling, Charles X. and Li, Chenghui},
+  title     = {Data Mining for Direct Marketing: Problems and Solutions},
+  booktitle = {Proceedings of the 4th International Conference on Knowledge Discovery and Data Mining (KDD)},
+  pages     = {73--79},
+  year      = {1998}
+}
+
+@inproceedings{van2007experimental,
+  author    = {Van Hulse, Jason and Khoshgoftaar, Taghi M. and Napolitano, Amri},
+  title     = {Experimental Perspectives on Learning from Imbalanced Data},
+  booktitle = {Proceedings of the 24th International Conference on Machine Learning (ICML)},
+  pages     = {935--942},
+  year      = {2007},
+  doi       = {10.1145/1273496.1273614}
+}
+
+
+% =============================================================================
+% NOISE AND OVERLAP IN IMBALANCED DATA
+% =============================================================================
+
+@article{napierala2016types,
+  author    = {Napiera{\l}a, Krystyna and Stefanowski, Jerzy},
+  title     = {Types of Minority Class Examples and Their Influence on Learning Classifiers from Imbalanced Data},
+  journal   = {Journal of Intelligent Information Systems},
+  volume    = {46},
+  number    = {3},
+  pages     = {563--597},
+  year      = {2016}
+}
+
+
+% =============================================================================
+% DATA LEAKAGE AND CROSS-VALIDATION
+% =============================================================================
+
+@inproceedings{kaufman2012leakage,
+  author    = {Kaufman, Shachar and Rosset, Saharon and Perlich, Claudia and Stitelman, Ori},
+  title     = {Leakage in Data Mining: Formulation, Detection, and Avoidance},
+  booktitle = {ACM Transactions on Knowledge Discovery from Data},
+  volume    = {6},
+  number    = {4},
+  pages     = {15},
+  year      = {2012}
+}
+
+@article{cawley2010over,
+  author    = {Cawley, Gavin C. and Talbot, Nicola L.C.},
+  title     = {On Over-fitting in Model Selection and Subsequent Selection Bias in Performance Evaluation},
+  journal   = {Journal of Machine Learning Research},
+  volume    = {11},
+  pages     = {2079--2107},
+  year      = {2010}
+}
+
+@article{johnson2019survey,
+  author    = {Johnson, Justin M. and Khoshgoftaar, Taghi M.},
+  title     = {Survey on Deep Learning with Class Imbalance},
+  journal   = {Journal of Big Data},
+  volume    = {6},
+  number    = {1},
+  pages     = {27},
+  year      = {2019},
+  doi       = {10.1186/s40537-019-0192-5}
+}
+
+@article{kohavi1995study,
+  author    = {Kohavi, Ron},
+  title     = {A Study of Cross-Validation and Bootstrap for Accuracy Estimation and Model Selection},
+  booktitle = {International Joint Conference on Artificial Intelligence (IJCAI)},
+  volume    = {14},
+  number    = {2},
+  pages     = {1137--1145},
+  year      = {1995}
+}
+
+@article{santos2018cross,
+  author    = {Santos, Miriam Seoane and Soares, Jastin Pompeu and Abreu, Pedro Henriques and Araujo, Helder and Santos, Jo{\~a}o},
+  title     = {Cross-Validation for Imbalanced Datasets: Avoiding Overoptimistic and Overfitting Approaches},
+  journal   = {IEEE Computational Intelligence Magazine},
+  volume    = {13},
+  number    = {4},
+  pages     = {59--76},
+  year      = {2018},
+  doi       = {10.1109/MCI.2018.2866730}
+}
+
+
+% =============================================================================
+% EVALUATION METRICS
+% =============================================================================
+
+@inproceedings{kubat1997addressing,
+  author    = {Kubat, Miroslav and Matwin, Stan},
+  title     = {Addressing the Curse of Imbalanced Training Sets: One-Sided Selection},
+  booktitle = {Proceedings of the 14th International Conference on Machine Learning (ICML)},
+  pages     = {179--186},
+  year      = {1997}
+}
+
+@article{hand2001simple,
+  author    = {Hand, David J. and Till, Robert J.},
+  title     = {A Simple Generalisation of the Area Under the {ROC} Curve for Multiple Class Classification Problems},
+  journal   = {Machine Learning},
+  volume    = {45},
+  number    = {2},
+  pages     = {171--186},
+  year      = {2001}
+}
+
+@article{brodersen2010balanced,
+  author    = {Brodersen, Kay Henning and Ong, Cheng Soon and Stephan, Klaas Enno and Buhmann, Joachim M.},
+  title     = {The Balanced Accuracy and Its Posterior Distribution},
+  booktitle = {International Conference on Pattern Recognition (ICPR 2010)},
+  pages     = {3121--3124},
+  year      = {2010},
+  publisher = {IEEE}
+}
+
+@article{sokolova2009systematic,
+  author    = {Sokolova, Marina and Lapalme, Guy},
+  title     = {A Systematic Analysis of Performance Measures for Classification Tasks},
+  journal   = {Information Processing \& Management},
+  volume    = {45},
+  number    = {4},
+  pages     = {427--437},
+  year      = {2009},
+  doi       = {10.1016/j.ipm.2009.03.002}
+}
+
+@article{fawcett2006introduction,
+  author    = {Fawcett, Tom},
+  title     = {An Introduction to {ROC} Analysis},
+  journal   = {Pattern Recognition Letters},
+  volume    = {27},
+  number    = {8},
+  pages     = {861--874},
+  year      = {2006},
+  doi       = {10.1016/j.patrec.2005.10.010}
+}
+
+@article{chicco2020advantages,
+  author    = {Chicco, Davide and Jurman, Giuseppe},
+  title     = {The Advantages of the {M}atthews Correlation Coefficient ({MCC}) over {F1} Score and Accuracy in Binary Classification Evaluation},
+  journal   = {BMC Genomics},
+  volume    = {21},
+  number    = {1},
+  pages     = {6},
+  year      = {2020},
+  doi       = {10.1186/s12864-019-6413-7}
+}
+
+@article{brzezinski2018combining,
+  author    = {Brzezi{\'n}ski, Dariusz and Stefanowski, Jerzy and Susmaga, Robert and {\'S}liwi{\'n}ski, Artur},
+  title     = {On the Dynamics of Classification Measures for Imbalanced and Streaming Data},
+  journal   = {IEEE Transactions on Neural Networks and Learning Systems},
+  volume    = {31},
+  number    = {8},
+  pages     = {2939--2952},
+  year      = {2020}
+}
+
+
+% =============================================================================
+% NOISE CLEANING
+% =============================================================================
+
+@article{tomek1976two,
+  author    = {Tomek, Ivan},
+  title     = {Two Modifications of {CNN}},
+  journal   = {IEEE Transactions on Systems, Man, and Cybernetics},
+  volume    = {6},
+  number    = {11},
+  pages     = {769--772},
+  year      = {1976}
+}
+
+@article{wilson1972asymptotic,
+  author    = {Wilson, Dennis L.},
+  title     = {Asymptotic Properties of Nearest Neighbor Rules Using Edited Data},
+  journal   = {IEEE Transactions on Systems, Man, and Cybernetics},
+  volume    = {2},
+  number    = {3},
+  pages     = {408--421},
+  year      = {1972},
+  doi       = {10.1109/TSMC.1972.4309137}
+}
+
+@article{hart1968condensed,
+  author    = {Hart, Peter E.},
+  title     = {The Condensed Nearest Neighbor Rule},
+  journal   = {IEEE Transactions on Information Theory},
+  volume    = {14},
+  number    = {3},
+  pages     = {515--516},
+  year      = {1968}
+}
+
+@inproceedings{drummond2003c4,
+  author    = {Drummond, Chris and Holte, Robert C.},
+  title     = {{C4.5}, Class Imbalance, and Cost Sensitivity: Why Under-Sampling Beats Over-Sampling},
+  booktitle = {Proceedings of the ICML Workshop on Learning from Imbalanced Datasets},
+  year      = {2003}
+}
+
+
+% =============================================================================
+% CLUSTERING
+% =============================================================================
+
+@inproceedings{macqueen1967some,
+  author    = {MacQueen, James},
+  title     = {Some Methods for Classification and Analysis of Multivariate Observations},
+  booktitle = {Proceedings of the 5th Berkeley Symposium on Mathematical Statistics and Probability},
+  volume    = {1},
+  pages     = {281--297},
+  year      = {1967}
+}
+
+@article{lloyd1982least,
+  author    = {Lloyd, Stuart P.},
+  title     = {Least Squares Quantization in {PCM}},
+  journal   = {IEEE Transactions on Information Theory},
+  volume    = {28},
+  number    = {2},
+  pages     = {129--137},
+  year      = {1982}
+}
+
+@inproceedings{arthur2007kmeans,
+  author    = {Arthur, David and Vassilvitskii, Sergei},
+  title     = {k-means++: The Advantages of Careful Seeding},
+  booktitle = {Proceedings of the 18th Annual ACM-SIAM Symposium on Discrete Algorithms (SODA)},
+  pages     = {1027--1035},
+  year      = {2007}
+}
+
+@article{selim1984kmeans,
+  author    = {Selim, Shokri Z. and Ismail, M. A.},
+  title     = {{K}-Means-Type Algorithms: A Generalized Convergence Theorem and Characterization of Local Optimality},
+  journal   = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  volume    = {6},
+  number    = {1},
+  pages     = {81--87},
+  year      = {1984}
+}
+
+@article{murtagh2012algorithms,
+  author    = {Murtagh, Fionn and Contreras, Pedro},
+  title     = {Algorithms for Hierarchical Clustering: An Overview},
+  journal   = {Wiley Interdisciplinary Reviews: Data Mining and Knowledge Discovery},
+  volume    = {2},
+  number    = {1},
+  pages     = {86--97},
+  year      = {2012}
+}
+
+@article{mullner2011modern,
+  author    = {M{\"u}llner, Daniel},
+  title     = {Modern Hierarchical, Agglomerative Clustering Algorithms},
+  journal   = {arXiv preprint arXiv:1109.2378},
+  year      = {2011}
+}
+
+
+% =============================================================================
+% PCA AND DIMENSIONALITY REDUCTION
+% =============================================================================
+
+@book{jolliffe2002principal,
+  author    = {Jolliffe, Ian T.},
+  title     = {Principal Component Analysis},
+  publisher = {Springer},
+  year      = {2002},
+  edition   = {2nd},
+  doi       = {10.1007/b98835}
+}
+
+
+% =============================================================================
+% BENCHMARK REPOSITORIES
+% =============================================================================
+
+@article{alcala2011keel,
+  author    = {Alc\'{a}l\'{a}-Fdez, Jes\'{u}s and Fern\'{a}ndez, Alberto and Luengo, Juli\'{a}n and Derrac, Joaqu\'{i}n and Garc\'{i}a, Salvador and S\'{a}nchez, Luciano and Herrera, Francisco},
+  title     = {{KEEL Data-Mining Software Tool}: Data Set Repository, Integration of Algorithms and Experimental Analysis Framework},
+  journal   = {Journal of Multiple-Valued Logic and Soft Computing},
+  volume    = {17},
+  number    = {2--3},
+  pages     = {255--287},
+  year      = {2011}
+}
+
+@misc{uci2017,
+  author       = {Dua, Dheeru and Graff, Casey},
+  title        = {{UCI Machine Learning Repository}},
+  year         = {2017},
+  howpublished = {\url{https://archive.ics.uci.edu/ml}},
+  institution  = {University of California, Irvine, School of Information and Computer Sciences}
+}
+
+
+% =============================================================================
+% SOFTWARE
+% =============================================================================
+
+@article{lemaitre2017imbalanced,
+  author    = {Lema\^{i}tre, Guillaume and Nogueira, Fernando and Aridas, Christos K.},
+  title     = {Imbalanced-learn: A {Python} Toolbox to Tackle the Curse of Imbalanced Datasets in Machine Learning},
+  journal   = {Journal of Machine Learning Research},
+  volume    = {18},
+  number    = {17},
+  pages     = {1--5},
+  year      = {2017}
+}
+
+@article{pedregosa2011scikit,
+  author    = {Pedregosa, Fabian and Varoquaux, Ga{\"e}l and Gramfort, Alexandre and Michel, Vincent and Thirion, Bertrand and Grisel, Olivier and Blondel, Mathieu and Prettenhofer, Peter and Weiss, Ron and Dubourg, Vincent and others},
+  title     = {Scikit-learn: Machine Learning in {P}ython},
+  journal   = {Journal of Machine Learning Research},
+  volume    = {12},
+  pages     = {2825--2830},
+  year      = {2011}
+}
+
+
+% =============================================================================
+% APPLICATION DOMAIN REFERENCES
+% =============================================================================
+
+@article{dal2014learned,
+  author    = {Dal Pozzolo, Andrea and Caelen, Olivier and Le Borgne, Yann-A{\"e}l and Waterschoot, Serge and Bontempi, Gianluca},
+  title     = {Learned Lessons in Credit Card Fraud Detection from a Practitioner Perspective},
+  journal   = {Expert Systems with Applications},
+  volume    = {41},
+  number    = {10},
+  pages     = {4915--4928},
+  year      = {2014}
+}
+
+@article{abdallah2016fraud,
+  author    = {Abdallah, Akhilesh and Maarof, Mohd Aizaini and Zainal, Anazida},
+  title     = {Fraud Detection System: A Survey},
+  journal   = {Journal of Network and Computer Applications},
+  volume    = {68},
+  pages     = {90--113},
+  year      = {2016}
+}
+
+@article{mazurowski2008training,
+  author    = {Mazurowski, Maciej A. and Habas, Piotr A. and Zurada, Jacek M. and Lo, Joseph Y. and Baker, Jay A. and Tourassi, Georgia D.},
+  title     = {Training Neural Network Classifiers for Medical Decision Making: The Effects of Imbalanced Datasets on Classification Performance},
+  journal   = {Neural Networks},
+  volume    = {21},
+  number    = {2--3},
+  pages     = {427--436},
+  year      = {2008}
+}
+
+@article{litjens2017survey,
+  author    = {Litjens, Geert and Kooi, Thijs and Bejnordi, Babak Ehteshami and Setio, Arnaud Arindra Adiyoso and Ciompi, Francesco and Ghafoorian, Mohsen and van der Laak, Jeroen A. W. M. and van Ginneken, Bram and S{\'a}nchez, Clara I.},
+  title     = {A Survey on Deep Learning in Medical Image Analysis},
+  journal   = {Medical Image Analysis},
+  volume    = {42},
+  pages     = {60--88},
+  year      = {2017}
+}
+
+@article{wang2016automatically,
+  author    = {Wang, Song and Liu, Taiyue and Tan, Lin},
+  title     = {Automatically Learning Semantic Features for Defect Prediction},
+  booktitle = {International Conference on Software Engineering (ICSE)},
+  pages     = {297--308},
+  year      = {2016}
+}
+
+@article{song2011general,
+  author    = {Song, Qinbao and Jia, Zihan and Shepperd, Martin and Ying, Shi and Liu, Jin},
+  title     = {A General Software Defect-Proneness Prediction Framework},
+  journal   = {IEEE Transactions on Software Engineering},
+  volume    = {37},
+  number    = {3},
+  pages     = {356--370},
+  year      = {2011}
+}
+
+@article{tavallaee2009detailed,
+  author    = {Tavallaee, Mahbod and Bagheri, Ebrahim and Lu, Wei and Ghorbani, Ali A.},
+  title     = {A Detailed Analysis of the {KDD CUP 99} Data Set},
+  booktitle = {IEEE Symposium on Computational Intelligence for Security and Defense Applications (CISDA)},
+  pages     = {1--6},
+  year      = {2009}
+}
+
+
+% =============================================================================
+% DISTRIBUTIONAL SIMILARITY MEASURES (NHOP paper — unique entries)
+% =============================================================================
+
+@article{bhattacharyya1943measure,
+  author    = {Bhattacharyya, Anil Kumar},
+  title     = {On a Measure of Divergence between Two Statistical Populations Defined by Their Probability Distributions},
+  journal   = {Bulletin of the Calcutta Mathematical Society},
+  volume    = {35},
+  pages     = {99--109},
+  year      = {1943}
+}
+
+@article{swain1991color,
+  author    = {Swain, Michael J. and Ballard, Dana H.},
+  title     = {Color Indexing},
+  journal   = {International Journal of Computer Vision},
+  volume    = {7},
+  number    = {1},
+  pages     = {11--32},
+  year      = {1991},
+  doi       = {10.1007/BF00130487}
+}
+
+@article{lin1991divergence,
+  author    = {Lin, Jianhua},
+  title     = {Divergence Measures Based on the {S}hannon Entropy},
+  journal   = {IEEE Transactions on Information Theory},
+  volume    = {37},
+  number    = {1},
+  pages     = {145--151},
+  year      = {1991},
+  doi       = {10.1109/18.61115}
+}
+
+@article{kullback1951,
+  author    = {Kullback, S. and Leibler, R. A.},
+  title     = {On Information and Sufficiency},
+  journal   = {Annals of Mathematical Statistics},
+  volume    = {22},
+  number    = {1},
+  pages     = {79--86},
+  year      = {1951},
+  doi       = {10.1214/aoms/1177729694}
+}
+
+@article{gretton2012kernel,
+  author    = {Gretton, Arthur and Borgwardt, Karsten M. and Rasch, Malte J. and Sch{\"o}lkopf, Bernhard and Smola, Alexander},
+  title     = {A Kernel Two-Sample Test},
+  journal   = {Journal of Machine Learning Research},
+  volume    = {13},
+  pages     = {723--773},
+  year      = {2012}
+}
+
+@inproceedings{heusel2017gans,
+  author    = {Heusel, Martin and Ramsauer, Hubert and Unterthiner, Thomas and Nessler, Bernhard and Hochreiter, Sepp},
+  title     = {{GAN}s Trained by a Two Time-Scale Update Rule Converge to a Local {N}ash Equilibrium},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {30},
+  year      = {2017}
+}
+
+@article{kolmogorov1933,
+  author    = {Kolmogorov, A. N.},
+  title     = {Sulla determinazione empirica di una legge di distribuzione},
+  journal   = {Giornale dell'Istituto Italiano degli Attuari},
+  volume    = {4},
+  pages     = {83--91},
+  year      = {1933}
+}
+
+@article{smirnov1948,
+  author    = {Smirnov, N.},
+  title     = {Table for Estimating the Goodness of Fit of Empirical Distributions},
+  journal   = {Annals of Mathematical Statistics},
+  volume    = {19},
+  number    = {2},
+  pages     = {279--281},
+  year      = {1948},
+  doi       = {10.1214/aoms/1177730256}
+}
+
+@book{villani2009,
+  author    = {Villani, C.},
+  title     = {Optimal Transport: Old and New},
+  publisher = {Springer},
+  address   = {Berlin},
+  year      = {2009},
+  volume    = {338},
+  series    = {Grundlehren der mathematischen Wissenschaften},
+  doi       = {10.1007/978-3-540-71050-9}
+}
+
+@article{rubner2000,
+  author    = {Rubner, Y. and Tomasi, C. and Guibas, L. J.},
+  title     = {The Earth Mover's Distance as a Metric for Image Retrieval},
+  journal   = {International Journal of Computer Vision},
+  volume    = {40},
+  number    = {2},
+  pages     = {99--121},
+  year      = {2000},
+  doi       = {10.1023/A:1026543900054}
+}
+
+@article{gibbs2002,
+  author    = {Gibbs, A. L. and Su, F. E.},
+  title     = {On Choosing and Bounding Probability Metrics},
+  journal   = {International Statistical Review},
+  volume    = {70},
+  number    = {3},
+  pages     = {419--435},
+  year      = {2002},
+  doi       = {10.1111/j.1751-5823.2002.tb00178.x}
+}
+
+@article{inman1989,
+  author    = {Inman, H. F. and Bradley, E. L.},
+  title     = {The Overlapping Coefficient as a Measure of Agreement between Probability Distributions and Point Estimation of the Overlap of Two Normal Densities},
+  journal   = {Communications in Statistics -- Theory and Methods},
+  volume    = {18},
+  number    = {10},
+  pages     = {3851--3874},
+  year      = {1989},
+  doi       = {10.1080/03610928908830127}
+}
+
+@techreport{weitzman1970,
+  author      = {Weitzman, M. S.},
+  title       = {Measures of Overlap of Income Distributions of White and {Negro} Families in the {United States}},
+  institution = {U.S.~Bureau of the Census},
+  type        = {Technical Paper},
+  number      = {22},
+  year        = {1970}
+}
+
+@article{anderson1994,
+  author    = {Anderson, N. H. and Hall, P. and Titterington, D. M.},
+  title     = {Two-Sample Test Statistics for Measuring Discrepancies between Two Multivariate Probability Density Functions Using Kernel-Based Density Estimates},
+  journal   = {Journal of Multivariate Analysis},
+  volume    = {50},
+  number    = {1},
+  pages     = {41--54},
+  year      = {1994},
+  doi       = {10.1006/jmva.1994.1033}
+}
+
+@article{szekely2004,
+  author    = {Sz{\'e}kely, G. J. and Rizzo, M. L.},
+  title     = {Testing for Equal Distributions in High Dimension},
+  journal   = {InterStat},
+  volume    = {5},
+  pages     = {1--6},
+  year      = {2004}
+}
+
+
+% =============================================================================
+% STATISTICAL THEORY (NHOP paper — unique entries)
+% =============================================================================
+
+@book{scott1992,
+  author    = {Scott, D. W.},
+  title     = {Multivariate Density Estimation: Theory, Practice, and Visualization},
+  publisher = {John Wiley \& Sons},
+  address   = {New York},
+  year      = {1992},
+  doi       = {10.1002/9780470316849}
+}
+
+@book{silverman1986,
+  author    = {Silverman, B. W.},
+  title     = {Density Estimation for Statistics and Data Analysis},
+  publisher = {Chapman \& Hall},
+  address   = {London},
+  year      = {1986},
+  doi       = {10.1007/978-1-4899-3324-9}
+}
+
+@article{beirlant1994,
+  author    = {Beirlant, J. and Devroye, L. and Gy{\"o}rfi, L. and Vajda, I.},
+  title     = {Large Deviations of Divergence Measures on Partitions},
+  journal   = {Journal of Statistical Planning and Inference},
+  volume    = {93},
+  number    = {1--2},
+  pages     = {1--16},
+  year      = {2001},
+  doi       = {10.1016/S0378-3758(00)00157-0}
+}
+
+@book{lecam1986,
+  author    = {Le Cam, L.},
+  title     = {Asymptotic Methods in Statistical Decision Theory},
+  publisher = {Springer},
+  address   = {New York},
+  year      = {1986},
+  series    = {Springer Series in Statistics},
+  doi       = {10.1007/978-1-4612-4946-7}
+}
+
+@book{lehmann2005,
+  author    = {Lehmann, E. L. and Romano, J. P.},
+  title     = {Testing Statistical Hypotheses},
+  edition   = {3rd},
+  publisher = {Springer},
+  address   = {New York},
+  year      = {2005},
+  series    = {Springer Texts in Statistics},
+  doi       = {10.1007/0-387-27605-X}
+}
+
+@book{devroye1987,
+  author    = {Devroye, L.},
+  title     = {A Course in Density Estimation},
+  publisher = {Birkh{\"a}user},
+  address   = {Boston},
+  year      = {1987},
+  series    = {Progress in Probability and Statistics},
+  volume    = {14}
+}
+
+@book{gyorfi2002,
+  author    = {Gy{\"o}rfi, L. and Kohler, M. and Krzy\.{z}ak, A. and Walk, H.},
+  title     = {A Distribution-Free Theory of Nonparametric Regression},
+  publisher = {Springer},
+  address   = {New York},
+  year      = {2002},
+  series    = {Springer Series in Statistics},
+  doi       = {10.1007/b97848}
+}
+
+@article{devroye1983,
+  author    = {Devroye, L. and Gy{\"o}rfi, L.},
+  title     = {Distribution-Free Exponential Bound for the {$L_1$} Error of Partitioning Estimates of a Regression Function},
+  journal   = {Statistics \& Probability Letters},
+  volume    = {1},
+  number    = {5},
+  pages     = {247--250},
+  year      = {1983},
+  doi       = {10.1016/0167-7152(83)90039-4}
+}
+
+@incollection{mcdiarmid1989,
+  author    = {McDiarmid, C.},
+  title     = {On the Method of Bounded Differences},
+  booktitle = {Surveys in Combinatorics},
+  editor    = {Siemons, J.},
+  publisher = {Cambridge University Press},
+  address   = {Cambridge},
+  year      = {1989},
+  series    = {London Mathematical Society Lecture Note Series},
+  volume    = {141},
+  pages     = {148--188}
+}
+
+@article{freedman1981,
+  author    = {Freedman, D. and Diaconis, P.},
+  title     = {On the Histogram as a Density Estimator: {$L_2$} Theory},
+  journal   = {Zeitschrift f{\"u}r Wahrscheinlichkeitstheorie und verwandte Gebiete},
+  volume    = {57},
+  number    = {4},
+  pages     = {453--476},
+  year      = {1981},
+  doi       = {10.1007/BF01025868}
+}
+
+@article{phipson2010,
+  author    = {Phipson, B. and Smyth, G. K.},
+  title     = {Permutation {$p$}-values Should Never Be Zero: Calculating Exact {$p$}-values When Permutations Are Randomly Drawn},
+  journal   = {Statistical Applications in Genetics and Molecular Biology},
+  volume    = {9},
+  number    = {1},
+  pages     = {Article 39},
+  year      = {2010},
+  doi       = {10.2202/1544-6115.1585}
+}
+
+@article{good1953,
+  author    = {Good, I. J.},
+  title     = {The Population Frequencies of Species and the Estimation of Population Parameters},
+  journal   = {Biometrika},
+  volume    = {40},
+  number    = {3--4},
+  pages     = {237--264},
+  year      = {1953},
+  doi       = {10.1093/biomet/40.3-4.237}
+}
+
+
+% =============================================================================
+% OVERSAMPLING LIMITS / INFORMATION-THEORETIC
+% =============================================================================
+
+@article{blagus2013smote,
+  author    = {Blagus, Rok and Lusa, Lara},
+  title     = {{SMOTE} for High-Dimensional Class-Imbalanced Data},
+  journal   = {BMC Bioinformatics},
+  volume    = {14},
+  number    = {1},
+  pages     = {106},
+  year      = {2013}
+}
+
+@article{ali2019imbalanced,
+  author    = {Ali, Anam and Shamsuddin, Siti Mariyam and Ralescu, Anca L.},
+  title     = {Classification with Class Imbalance Problem: A Review},
+  journal   = {International Journal of Advance Soft Computing and Applications},
+  volume    = {7},
+  number    = {3},
+  pages     = {176--204},
+  year      = {2015}
+}
+
+
+% =============================================================================
+% OUR OWN WORKS (self-citations)
+% =============================================================================
+
+@techreport{hajiannejad2025circular,
+  author      = {Hajiannejad, Parsa},
+  title       = {Circular Oversampling with Gravity-Biased Distributions, Local Region Estimation, and Layered Segmental Generation for Imbalanced Classification},
+  institution = {Università degli Studi di Milano},
+  year        = {2025}
+}

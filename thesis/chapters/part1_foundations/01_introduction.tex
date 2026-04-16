@@ -1,0 +1,71 @@
+% =============================================================================
+% Chapter 1 -- Unified Introduction
+% =============================================================================
+
+\chapter{Introduction}
+\label{ch:introduction}
+
+\section{Motivation and Research Programme}
+\label{sec:intro:motivation}
+
+Class imbalance --- when one class in a binary dataset is vastly underrepresented --- degrades classifier performance precisely in the domains where correctness matters most: fraud detection~\cite{dal2014learned}, medical diagnosis~\cite{mazurowski2008training}, intrusion detection~\cite{tavallaee2009detailed}, and industrial defect detection~\cite{wang2016automatically}.
+When the majority class dominates the empirical risk, the classifier learns a boundary biased toward the majority at the expense of the minority~\cite{japkowicz2002class, he2009learning}.
+
+The most widely adopted remedy is oversampling.
+SMOTE~\cite{chawla2002smote} generates synthetic minority samples by linearly interpolating between a seed and one of its $k$-nearest neighbors:
+\begin{equation}
+  \vx_{\mathrm{new}} = \vx_i + \lambda \cdot (\vx_j - \vx_i), \quad \lambda \sim \mathcal{U}(0,1).
+  \label{eq:smote}
+\end{equation}
+Despite over 10{,}000 citations and dozens of variants~\cite{fernandez2018smote}, SMOTE confines all synthetic samples to a \emph{one-dimensional line segment}, ignoring the 2-D neighbourhood structure of each minority pair.
+This leads to linear artefacts, class-overlap amplification near boundaries, and noise sensitivity~\cite{han2005borderline, batista2004study}.
+
+Two open problems drive this thesis:
+\begin{enumerate}
+  \item \textbf{No principled seed selection.} Neither SMOTE nor any variant uses a formally motivated criterion for which minority instances should serve as seeds.
+  \item \textbf{The causal question is unresolved.} Every oversampling paper assumes imbalance degrades performance, but no controlled study has isolated the effect of imbalance itself from confounding factors such as reduced sample size.
+\end{enumerate}
+
+Part~II addresses problem~1 with a geometry-preserving seed selection pipeline using the Bhattacharyya Coefficient~\cite{bhattacharyya1943measure} and complementary metrics, together with three circular oversampling algorithms (Parts~II--III) that replace SMOTE's line segment with a disk.
+Part~IV addresses problem~2 with a controlled degradation-and-recovery study using uniform random minority removal to isolate pure imbalance from distributional shift.
+
+\section{Research Questions}
+\label{sec:intro:rqs}
+
+This thesis addresses seven research questions spanning the two main works:
+
+\begin{description}[leftmargin=!, labelwidth=\widthof{\textbf{RQ7:}}]
+  \item[\textbf{RQ1}] Can a geometry-preserving seed selection criterion, based on the Bhattacharyya Coefficient and complementary metrics, improve the quality of oversampled minority data?
+  \item[\textbf{RQ2}] Can circle-based generation outperform linear interpolation for oversampling imbalanced datasets?
+  \item[\textbf{RQ3}] Does gravity-biased angular sampling via Von Mises distributions improve synthetic sample quality?
+  \item[\textbf{RQ4}] Does the choice of seed selection strategy impact the quality of oversampled data?
+  \item[\textbf{RQ5}] Does progressive class imbalance monotonically degrade classifier performance, or is there a threshold effect?
+  \item[\textbf{RQ6}] Can oversampling methods fully recover balanced-dataset performance after degradation?
+  \item[\textbf{RQ7}] Is performance loss caused by imbalance \emph{per se}, or primarily by information loss from a smaller minority sample?
+\end{description}
+
+\section{Contributions}
+\label{sec:intro:contributions}
+
+The specific contributions of this thesis, labeled C1--C5, are as follows:
+
+\begin{enumerate}[label=\textbf{C\arabic*.}, leftmargin=*, itemsep=4pt]
+  \item \textbf{Geometry-preserving seed selection} (Part~II): a composite criterion combining the Bhattacharyya Coefficient (marginal fidelity), JSD (distributional divergence), AGTP (geometric-topological preservation), and $Z$ (smoothness regulariser); a four-stage pipeline with cluster-proportional stratified sampling; and a PCA ablation study.
+
+  \item \textbf{GVM-CO} (Part~III): gravity scoring framework (Spread, Area, Density, Sparsity, Gravity score $g_c$, Gravity center $\vg_c$), Von Mises angular biasing with concentration $\kappa = \kappa_{\max} \cdot s_c^{\gamma}$, cross-cluster and full-dataset clustering variants.
+
+  \item \textbf{LRE-CO and LS-CO} (Part~III): LRE-CO provides Voronoi-constrained generation with certainty threshold and rejection sampling within the disk-Voronoi intersection. LS-CO provides layered segmental generation with concentric rings and angular segments, generic and cluster-based variants.
+
+  \item \textbf{Controlled degradation-recovery experimental protocol} (Part~IV): uniform random minority removal ensuring no distributional bias; leakage-safe four-rule cross-validation protocol preventing the three main forms of data leakage in oversampling studies~\cite{kaufman2012leakage, cawley2010over}.
+
+  \item \textbf{Empirical causal evidence for class imbalance} (Part~IV): characterization of the degradation signature across six metrics, five classifiers, and ten datasets; comparative recovery analysis of seven oversampling methods; evidence for a non-linear threshold at $\IR \approx 2$; and quantification of the irreducible information-loss gap.
+\end{enumerate}
+
+\section{Thesis Organization}
+\label{sec:intro:organization}
+
+\textbf{Part~I} (Chapters~2--3) provides background and a literature review.
+\textbf{Part~II} (Chapter~4) presents the seed selection pipeline.
+\textbf{Part~III} (Chapters~5--9) presents the three circular algorithms with results and ablation.
+\textbf{Part~IV} (Chapters~10--14) presents the causal study: protocol, degradation, recovery, and discussion.
+\textbf{Part~V} (Chapter~15) synthesises all contributions, answers RQ1--RQ7, and outlines future directions.

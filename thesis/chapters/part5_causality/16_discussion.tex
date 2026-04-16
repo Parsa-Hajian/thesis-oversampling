@@ -1,0 +1,85 @@
+% =============================================================================
+% Chapter 16 -- Discussion
+% =============================================================================
+
+\chapter{Discussion}
+\label{ch:discussion}
+
+\section{Answering the Central Question}
+\label{sec:disc:central}
+
+The central research question of Part~V asks: \emph{Is class imbalance the true cause of poor classifier performance?}
+Our controlled experiment yields a nuanced but affirmative answer.
+
+\textbf{Yes, class imbalance causes performance degradation} --- but not uniformly, not linearly, and not irreversibly.
+The degradation is real and consistent across all datasets and metrics once $\IR > 1.5$--$2$, in line with the threshold identified by Japkowicz and Stephen~\cite{japkowicz2002class}.
+It is not merely an artefact of a smaller minority sample size, because the random removal procedure introduces no distributional bias into the degradation; the only systematic variable that changes is the relative count.
+This directly addresses the long-standing open question of Weiss and Provost~\cite{weiss2003effect}: even when the minority distribution is held constant, imbalance alone degrades performance.
+
+\textbf{However, the magnitude of the effect depends strongly on the classifier.}
+Ensemble methods (RF)~\cite{breiman2001random, galar2012review} are substantially more robust than linear or distance-based methods (LR, KNN), suggesting that the ``imbalance problem'' is partly a problem of inappropriate algorithm choice~\cite{ling2004exploration}.
+A well-tuned ensemble on a moderately imbalanced dataset ($\IR < 4$) may outperform SMOTE-augmented logistic regression, consistent with the findings of Galar et al.~\cite{galar2012review}.
+
+
+% ============================================================================
+\section{RQ5: Imbalance vs.\ Information Loss}
+\label{sec:disc:rq5}
+
+The random removal design was specifically intended to disentangle imbalance from information loss.
+Because each instance is equally likely to be removed, the removal procedure introduces no distributional bias, so any performance loss must be attributable to the reduced \emph{count} (and thus the increased $\IR$) rather than to a systematic removal policy --- a confound identified as problematic by Japkowicz and Stephen~\cite{japkowicz2002class}.
+
+Our results show that even with unbiased random removal, performance degrades monotonically with removal fraction.
+This confirms that imbalance \emph{per se} --- not merely distributional shift --- is a genuine cause of degraded performance.
+This extends the work of Weiss and Provost~\cite{weiss2003effect}, who demonstrated this effect for tree-based classifiers; our study shows it holds across five classifier families and six metrics.
+
+Nonetheless, the recovery experiment reveals that real minority data cannot be fully replaced by synthetic data~\cite{blagus2013smote}.
+When the starting minority is small (20\% remaining), all oversamplers recover to approximately 90--97\% of the balanced baseline, leaving a residual gap attributable to the irreducible information loss from having fewer real samples to learn from.
+This is consistent with the theoretical bound of Blagus and Lusa~\cite{blagus2013smote}: SMOTE-synthesised distributions are a degraded approximation of the true minority distribution, and this approximation error propagates to the classifier's decision boundary.
+
+\paragraph{Information-loss interpretation.}
+When 80\% of real minority instances are removed, the surviving 20\% carry only a fraction of the original distributional information.
+Even the best oversampler can only produce synthetic distributions whose fidelity to the original minority distribution is bounded by the information present in the surviving real instances.
+This bound cannot be overcome by any synthesis method --- it is an information-theoretic floor, not an algorithmic limitation.
+Part~V thus provides not only an empirical finding but a principled explanation for why the residual gap exists.
+
+
+% ============================================================================
+\section{Practical Implications}
+\label{sec:disc:practical}
+
+\begin{enumerate}[leftmargin=*, itemsep=4pt]
+  \item \textbf{Oversampling is effective but not a panacea.}
+  Users should expect recovery to within approximately 90--97\% of balanced performance, not full recovery~\cite{blagus2013smote, fernandez2018learning}.
+  Collecting more real minority data remains preferable to synthetic augmentation where feasible.
+
+  \item \textbf{Classifier choice matters as much as oversampling method.}
+  Using an RF or ensemble classifier on the raw imbalanced data may be more practical than applying SMOTE to a weaker classifier, consistent with the recommendations of Galar et al.~\cite{galar2012review}.
+
+  \item \textbf{GVM-CO and K-Means SMOTE offer the best recovery ceiling.}
+  For applications where full recovery is important (e.g.\ medical diagnosis~\cite{he2009learning}), these methods are recommended over standard SMOTE.
+  GVM-CO's advantage is mechanistically grounded: its gravity-biased Von Mises sampling (Chapter~\ref{ch:proposed_methods}) and BC-guided seed selection (Chapter~\ref{ch:seed_selection}) together preserve minority distributional fidelity more effectively than linear interpolation.
+
+  \item \textbf{Leakage is a real and quantifiable concern.}
+  Na\"{i}ve cross-validation that applies oversampling before splitting produces optimistically biased AUC estimates~\cite{kaufman2012leakage, cawley2010over}.
+  The leakage-safe protocol described in Section~\ref{sec:setup:leakage} should be considered standard practice in oversampling research~\cite{johnson2019survey}.
+  The quantified effect (2--5\% AUC inflation) is large enough to reverse the relative ranking of oversampling methods, making protocol standardization a prerequisite for reproducible benchmarking.
+\end{enumerate}
+
+
+% ============================================================================
+\section{Limitations}
+\label{sec:disc:limitations}
+
+\begin{itemize}[leftmargin=*]
+  \item The uniform random removal protocol is inherently stochastic: different random seeds produce different removal sequences.
+  We use a fixed seed (\texttt{random\_state = 42}) for reproducibility, but the results may vary slightly under different seeds; the qualitative findings are expected to be robust~\cite{weiss2003effect}.
+
+  \item Real KEEL/UCI files were not available for all datasets; synthetic analogues with matching $(n, d)$ were used~\cite{blagus2013smote}.
+  The qualitative findings are expected to generalise~\cite{fernandez2018learning}, but exact numerical results may differ on the original files.
+
+  \item The recovery experiment starts from $\IR \approx 4$.
+  Behavior at more extreme ratios ($\IR > 10$~\cite{he2009learning}) is not directly characterized here; the threshold effect and recovery gap may be more pronounced at higher imbalance.
+
+  \item Only binary classification is studied.
+  Multi-class imbalance introduces additional complexity --- including competing minority-to-minority interactions --- not addressed here~\cite{fernandez2018learning, haixiang2017learning}.
+\end{itemize}

@@ -1,0 +1,128 @@
+% =============================================================================
+% Standalone: Synthesis and Conclusion
+% =============================================================================
+\documentclass[12pt, a4paper, openany]{book}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage[top=3cm,bottom=3cm,inner=3.5cm,outer=2.5cm,headheight=15pt]{geometry}
+\usepackage{mathpazo}
+\usepackage{microtype}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\graphicspath{
+  {../circular-oversampling/thesis/figures/}
+  {../nhop/paper/figures/}
+  {../imbalance-causality/thesis/figures/}
+  {figures/}
+}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage[font=small, labelfont=bf]{caption}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{array}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\usepackage[ruled, vlined, linesnumbered]{algorithm2e}
+\SetKwInput{KwInput}{Input}
+\SetKwInput{KwOutput}{Output}
+\SetKwInput{KwParam}{Parameters}
+\SetAlFnt{\small}
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{unimired}{RGB}{153,0,0}
+\definecolor{linkblue}{RGB}{0,50,130}
+\lstset{
+  basicstyle=\ttfamily\small,
+  keywordstyle=\bfseries\color{blue!70!black},
+  commentstyle=\itshape\color{green!40!black},
+  stringstyle=\color{red!60!black},
+  numbers=left, numberstyle=\tiny,
+  breaklines=true, frame=single, tabsize=4,
+}
+\usepackage[colorlinks=true,linkcolor=linkblue,citecolor=unimired,urlcolor=linkblue,bookmarks=true,bookmarksnumbered=true]{hyperref}
+\usepackage{url}
+\pdfstringdefDisableCommands{%
+  \def\kappa{}\def\gamma{}\def\sigma{}\def\tau{}\def\alpha{}%
+  \def\mathrm#1{#1}\def\max{}\def\text#1{#1}\def\nhop{NHOP}%
+}
+\usepackage{csquotes}
+\usepackage[backend=biber,style=numeric-comp,sorting=nyt,maxnames=6,minnames=3,doi=false,isbn=false,url=false,eprint=false]{biblatex}
+\addbibresource{references.bib}
+\usepackage{xr-hyper}
+\externaldocument{build/main}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\nouppercase{\leftmark}}
+\fancyhead[RO]{\nouppercase{\rightmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{remark}{Remark}[chapter]
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{enumitem}
+\usepackage{xspace}
+\usepackage{pdfpages}
+\usepackage{appendix}
+\usepackage{pifont}
+\newcommand{\starmark}{\ding{72}}
+\usepackage{titlesec}
+\titleformat{\part}[display]
+  {\normalfont\huge\bfseries\centering}
+  {\partname\ \thepart}{20pt}{\Huge}
+
+% Custom commands
+\newcommand{\thesistitle}{From Distributional Similarity to Causal Imbalance:
+  NHOP, Circular Oversampling, and a Controlled Degradation Study}
+\newcommand{\authorname}{Parsa Hajiannejad}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\IR}{\mathrm{IR}}
+\newcommand{\TV}{\operatorname{TV}}
+\newcommand{\OVL}{\operatorname{OVL}}
+\newcommand{\NHOP}{\operatorname{NHOP}}
+\newcommand{\HI}{\operatorname{HI}}
+\newcommand{\BC}{\operatorname{BC}}
+\newcommand{\KL}{\operatorname{KL}}
+\newcommand{\JS}{\operatorname{JS}}
+\newcommand{\nhop}{NHOP\xspace}
+\newcommand{\vx}{\bm{x}}
+\newcommand{\vy}{\bm{y}}
+\newcommand{\vz}{\bm{z}}
+\newcommand{\vc}{\bm{c}}
+\newcommand{\vmu}{\bm{\mu}}
+\newcommand{\vg}{\bm{g}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\begin{document}
+\mainmatter
+
+\part{Synthesis and Conclusion}
+\label{part:conclusion}
+
+\input{chapters/part6_conclusion/17_conclusion}
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliography}
+\printbibliography[title={Bibliography}]
+
+\end{document}

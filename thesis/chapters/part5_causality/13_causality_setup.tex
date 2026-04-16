@@ -1,0 +1,135 @@
+% =============================================================================
+% Chapter 13 -- Causality Experimental Setup
+% =============================================================================
+
+\chapter{Causality Experimental Setup}
+\label{ch:causality_setup}
+
+This chapter details the experimental methodology for the degradation-and-recovery study: datasets, degradation protocol, recovery protocol, classifiers, and the leakage-safe cross-validation protocol.
+The uniform random removal protocol (Chapter~\ref{ch:causality_intro}, Section~\ref{sec:causal:random_removal}) ensures that the degradation sequence introduces no distributional bias, providing the cleanest possible test of the imbalance hypothesis.
+
+
+% ============================================================================
+\section{Datasets}
+\label{sec:setup_causal:datasets}
+
+We use ten binary classification datasets drawn from the UCI Machine Learning Repository~\cite{fernandez2018learning}, loaded in a fully balanced configuration ($\IR \approx 1$) by drawing equal-sized random samples from both classes.
+Where real dataset files are not available, synthetic analogues are generated using \texttt{sklearn.datasets.make\_classification}~\cite{blagus2013smote} with matching $(n, d)$ parameters; this is a standard practice for controlled ablation studies.
+
+\begin{table}[H]
+\centering
+\caption{Datasets used in the degradation-recovery study (balanced starting point, $\IR = 1$).}
+\label{tab:causal:datasets}
+\begin{tabular}{lrrll}
+\toprule
+\textbf{Dataset} & \textbf{$n$} & \textbf{$d$} & \textbf{Source} & \textbf{Characteristic} \\
+\midrule
+breast-cancer-wisconsin & 400 &  9 & UCI & Medical, low-dim \\
+ionosphere              & 350 & 34 & UCI & Radar, high-dim \\
+heart                   & 270 & 13 & UCI & Medical, mid-dim \\
+banknote                & 600 &  4 & UCI & Finance, very low-dim \\
+sonar                   & 208 & 60 & UCI & Acoustic, very high-dim \\
+pima                    & 400 &  8 & UCI & Medical, low-dim \\
+haberman                & 200 &  3 & UCI & Survival, minimal features \\
+glass                   & 146 &  9 & UCI & Materials, low-dim \\
+vehicle                 & 400 & 18 & UCI & Sensor, mid-dim \\
+credit                  & 400 & 23 & UCI & Finance, mid-dim \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The total balanced sample size $n$ ranges from 146 (glass) to 600 (banknote), covering low-, medium-, and high-dimensional settings ($d \in [3, 60]$) representative of real-world imbalanced learning benchmarks~\cite{fernandez2018learning, krawczyk2016learning}.
+
+
+% ============================================================================
+\section{Degradation Protocol}
+\label{sec:setup_causal:degradation}
+
+Starting from the balanced dataset, we apply the uniform random removal procedure with the following parameters:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Step size:} 1\% of the original minority class removed per step, yielding approximately 80 degradation steps per dataset~\cite{weiss2003effect}.
+    \item \textbf{Stop condition:} 80\% removed (20\% of original minority remaining, $\IR \approx 4$).
+    This stop point was chosen to match real-world mild-to-moderate imbalance~\cite{he2009learning}.
+    \item \textbf{Majority class:} held fixed throughout Phase~1, isolating the minority-removal effect~\cite{japkowicz2002class}.
+    \item \textbf{Selection rule:} at each step, a single minority instance is selected uniformly at random for removal.
+\end{itemize}
+
+At each step, a single minority instance is selected uniformly at random for removal.
+This design ensures no distributional criterion biases the removal sequence, providing the cleanest test of pure imbalance effects.
+Because every instance is equally likely to be removed, the degradation protocol avoids confounding the effect of reduced minority count with any systematic bias introduced by a structured removal policy.
+
+
+% ============================================================================
+\section{Recovery Protocol}
+\label{sec:setup_causal:recovery}
+
+Phase~2 begins at the most-degraded state (20\% minority remaining, $\IR \approx 4$) and applies each oversampler incrementally:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Target sequence:} minority class size increases linearly from $n_{\min}^{(80)}$ to $n_{\min}^{(0)}$ in approximately 80 steps of 1\% each, matching the degradation granularity.
+    \item \textbf{Oversampler configuration:} at each recovery step, the oversampler's \texttt{sampling\_strategy} is set to the ratio $n_{\text{target}} / n_{\text{maj}}$, generating only the increment needed for that step rather than a full resample.
+    \item \textbf{Oversamplers evaluated:}
+    \begin{enumerate}[leftmargin=*]
+        \item No-op (lower bound)
+        \item Random Oversampling (ROS)~\cite{fernandez2018learning}
+        \item SMOTE~\cite{chawla2002smote}
+        \item Borderline-SMOTE~\cite{han2005borderline}
+        \item ADASYN~\cite{he2008adasyn}
+        \item K-Means SMOTE~\cite{douzas2018improving}
+        \item GVM-CO (Chapter~\ref{ch:proposed_methods})
+    \end{enumerate}
+\end{itemize}
+
+The inclusion of GVM-CO directly connects Part~V to Part~IV: the causal study serves as an independent evaluation of GVM-CO's recovery capability in a controlled setting, separate from the benchmark comparisons reported in Chapter~\ref{ch:results}.
+
+
+% ============================================================================
+\section{Classifiers}
+\label{sec:setup_causal:classifiers}
+
+Five classifiers spanning the main inductive bias categories are evaluated~\cite{ling2004exploration}: \textbf{RF} (100 trees)~\cite{breiman2001random}, \textbf{DT} (CART, Gini)~\cite{breiman1984cart}, \textbf{KNN} ($k=5$)~\cite{cover1967nearest}, \textbf{LR} (max\_iter$=1000$)~\cite{fernandez2018learning}, and \textbf{MLP} (64-32 hidden units)~\cite{haixiang2017learning}.
+
+
+% ============================================================================
+\section{Leakage-Safe Cross-Validation Protocol}
+\label{sec:setup:leakage}
+
+We adopt a strict four-rule protocol to prevent all three forms of data leakage identified by Kaufman et al.~\cite{kaufman2012leakage} and Cawley and Talbot~\cite{cawley2010over}.
+Five-fold stratified cross-validation~\cite{kohavi1995study} is used throughout.
+
+\begin{enumerate}[leftmargin=*, itemsep=4pt]
+    \item \textbf{Stratified split on pre-oversample data.}
+    The $k$-fold stratified split is computed on the \emph{original, non-oversampled} dataset~\cite{cawley2010over}.
+    Fold indices are never recomputed after oversampling, preventing the oversampler from influencing which instances appear in which fold.
+
+    \item \textbf{Oversampling inside folds only.}
+    For each fold, oversampling is applied exclusively to the training partition~\cite{cawley2010over}.
+    The test partition is always original, non-synthetic data.
+    No synthetic point ever appears in a test fold.
+    This is the single most important rule~\cite{johnson2019survey}; its violation artificially inflates AUC by 2--5\% on typical imbalanced benchmarks~\cite{kaufman2012leakage}.
+
+    \item \textbf{Scaler fitted on training partition only.}
+    \texttt{StandardScaler} is fitted on the (already-oversampled) training fold and applied to both training and test folds.
+    The test fold's feature scale is never used to fit the scaler, preventing scale leakage~\cite{kaufman2012leakage}.
+
+    \item \textbf{Fresh oversampler per fold.}
+    A new oversampler instance is created for each fold, ensuring no cross-fold state (fitted distributions, $k$-NN graphs) is shared~\cite{cawley2010over}.
+\end{enumerate}
+
+These four rules are encoded directly in the experiment implementation as \texttt{LeakageSafeCV}.
+This protocol prevents a form of evaluation contamination that is common in the imbalanced learning literature: many published results showing large improvements from oversampling are partially attributable to leakage rather than genuine improvements, as demonstrated by Kaufman et al.~\cite{kaufman2012leakage}.
+The quantified leakage effect (2--5\% AUC inflation) motivates our strict protocol.
+
+
+% ============================================================================
+\section{Evaluation Protocol}
+\label{sec:setup_causal:evaluation}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Cross-validation:} 5-fold stratified~\cite{kohavi1995study}, repeated independently at each step in both phases.
+    \item \textbf{Reported value:} mean across folds for each metric~\cite{kohavi1995study}.
+    \item \textbf{Aggregation across datasets:} macro-average (unweighted mean) across the ten datasets, following standard practice in oversampling benchmarks~\cite{fernandez2018learning}.
+    \item \textbf{Metrics:} AUC-ROC, F1-Score, G-Mean, Balanced Accuracy, Sensitivity, Specificity --- the same six metrics used throughout Parts~II--IV.
+    \item \textbf{Random seed:} all experiments use \texttt{random\_state = 42} throughout for full reproducibility.
+\end{itemize}

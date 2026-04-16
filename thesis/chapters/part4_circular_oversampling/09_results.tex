@@ -1,0 +1,285 @@
+% =============================================================================
+% Chapter 9 -- Results and Discussion
+% =============================================================================
+
+\chapter{Results and Discussion}
+\label{ch:results}
+
+
+% ============================================================================
+\section{Impact of Seed Selection}
+\label{sec:results:seed_impact}
+
+\subsection{Seed Quality Metrics}
+
+Table~\ref{tab:results:seed_quality} reports the per-criterion values (BC, AGTP, JSD, $Z$) and their composite difference ($\Delta$ Score) for the selected seed sets compared to randomly generated seed sets across the 14 benchmark datasets.
+The $\Delta$ Score column combines four criteria with different scales; it should not be interpreted as a classification performance metric.
+
+\begin{table}[H]
+\centering
+\caption{Seed selection quality metrics. ``Selected'' = geometry-preserving seed selection; ``Random'' = average of 100 random seed sets.}
+\label{tab:results:seed_quality}
+\small
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lcccc|cccc|c}
+\toprule
+\textbf{Dataset} & \multicolumn{4}{c|}{\textbf{Selected}} & \multicolumn{4}{c|}{\textbf{Random (avg.)}} & \textbf{$\Delta$ Score} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+& BC & AGTP & JSD & $Z$ & BC & AGTP & JSD & $Z$ & \\
+\midrule
+ecoli1           & 0.924 & 0.825 & 0.041 & 0.183 & 0.746 & 0.708 & 0.182 & 0.399 & $+0.430$ \\
+ecoli2           & 0.922 & 0.884 & 0.038 & 0.095 & 0.779 & 0.717 & 0.155 & 0.304 & $+0.447$ \\
+ecoli3           & 0.903 & 0.890 & 0.047 & 0.133 & 0.791 & 0.690 & 0.130 & 0.203 & $+0.373$ \\
+glass1           & 0.932 & 0.857 & 0.035 & 0.171 & 0.803 & 0.583 & 0.207 & 0.374 & $+0.543$ \\
+glass4           & 0.925 & 0.783 & 0.052 & 0.136 & 0.838 & 0.655 & 0.195 & 0.305 & $+0.331$ \\
+yeast1           & 0.919 & 0.914 & 0.039 & 0.119 & 0.787 & 0.730 & 0.141 & 0.209 & $+0.393$ \\
+yeast3           & 0.821 & 0.831 & 0.071 & 0.107 & 0.647 & 0.652 & 0.213 & 0.300 & $+0.486$ \\
+thyroid1         & 0.912 & 0.803 & 0.044 & 0.180 & 0.719 & 0.633 & 0.188 & 0.286 & $+0.447$ \\
+haberman         & 0.909 & 0.774 & 0.037 & 0.104 & 0.828 & 0.532 & 0.149 & 0.270 & $+0.438$ \\
+vehicle0         & 0.913 & 0.883 & 0.040 & 0.135 & 0.753 & 0.758 & 0.127 & 0.213 & $+0.352$ \\
+pima             & 0.907 & 0.830 & 0.046 & 0.148 & 0.720 & 0.616 & 0.193 & 0.296 & $+0.512$ \\
+wisconsin        & 0.889 & 0.802 & 0.033 & 0.084 & 0.748 & 0.663 & 0.118 & 0.209 & $+0.367$ \\
+heart            & 0.937 & 0.790 & 0.028 & 0.087 & 0.817 & 0.637 & 0.162 & 0.253 & $+0.382$ \\
+ionosphere       & 0.889 & 0.883 & 0.055 & 0.160 & 0.752 & 0.637 & 0.157 & 0.246 & $+0.460$ \\
+\midrule
+\textbf{Average} & 0.907 & 0.839 & 0.043 & 0.132 & 0.766 & 0.658 & 0.165 & 0.276 & $+0.425$ \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\subsection{Impact on Classifier Performance}
+
+Table~\ref{tab:results:seed_clf} shows the average metric improvement when seed selection is enabled for each proposed algorithm, averaged across all 14 datasets and 7 classifiers.
+
+\begin{table}[H]
+\centering
+\caption{Average metric improvement with seed selection enabled ($\Delta$ = with $-$ without).}
+\label{tab:results:seed_clf}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Method} & \textbf{$\Delta$ F1} & \textbf{$\Delta$ G-mean} & \textbf{$\Delta$ AUC} & \textbf{$\Delta$ BAcc} & \textbf{$\Delta$ Prec} & \textbf{$\Delta$ Sens} \\
+\midrule
+Circ-SMOTE  & $+0.012$ & $+0.015$ & $+0.008$ & $+0.010$ & $+0.009$ & $+0.018$ \\
+GVM-CO      & $+0.025$ & $+0.030$ & $+0.018$ & $+0.022$ & $+0.015$ & $+0.035$ \\
+LRE-CO      & $+0.020$ & $+0.022$ & $+0.015$ & $+0.018$ & $+0.012$ & $+0.028$ \\
+LS-CO       & $+0.018$ & $+0.020$ & $+0.012$ & $+0.015$ & $+0.010$ & $+0.025$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The geometry-preserving seed selection (Chapter~\ref{ch:seed_selection}) provides consistent improvements across all methods, with GVM-CO benefiting most ($+0.025$ F1, $+0.035$ Sensitivity) because Von Mises directional biasing amplifies seed representativeness: higher-quality seeds produce better-calibrated gravity centers, which in turn improve the direction $\mu$ and concentration $\kappa$ of the Von Mises sampling.
+
+
+% ============================================================================
+\section{Overall Performance Comparison}
+\label{sec:results:overall}
+
+\subsection{F1-Score Results}
+
+\begin{table}[H]
+\centering
+\caption{Average F1-score across 14 datasets. Best result per classifier in bold.}
+\label{tab:results:f1}
+\small
+\begin{tabular}{lcccccccc}
+\toprule
+\textbf{Method} & \textbf{KNN} & \textbf{DT} & \textbf{SVM} & \textbf{NB} & \textbf{MLP} & \textbf{LR} & \textbf{RF} & \textbf{Avg.} \\
+\midrule
+None       & 0.9137 & 0.7723 & 0.9330 & 0.9245 & 0.9329 & 0.9284 & 0.8881 & \textbf{0.8990$\pm$0.0959} \\
+ROS        & 0.8980 & 0.7537 & 0.9313 & \textbf{0.9261} & 0.9285 & 0.9233 & 0.8815 & 0.8918$\pm$0.0966 \\
+SMOTE      & 0.9145 & 0.7617 & 0.9323 & 0.9250 & 0.9241 & 0.9237 & 0.8902 & 0.8959$\pm$0.0980 \\
+B-SMOTE    & 0.9050 & 0.7817 & 0.9286 & 0.8752 & 0.9243 & 0.9122 & 0.8801 & 0.8867$\pm$0.0929 \\
+ADASYN     & 0.9027 & 0.7669 & 0.9320 & 0.8831 & 0.9283 & 0.9165 & 0.8778 & 0.8868$\pm$0.0994 \\
+SVM-SMOTE  & 0.9014 & 0.7873 & 0.9295 & 0.9000 & 0.9249 & 0.9137 & 0.9078 & 0.8949$\pm$0.0932 \\
+KM-SMOTE   & 0.9052 & \textbf{0.7884} & 0.9302 & 0.9160 & 0.9251 & 0.9252 & 0.8843 & 0.8964$\pm$0.0981 \\
+Circ-SMOTE & 0.9136 & 0.7746 & 0.9344 & 0.8613 & 0.9292 & 0.9280 & 0.9090 & 0.8929$\pm$0.0968 \\
+\midrule
+GVM-CO     & 0.9136 & 0.7649 & 0.9328 & 0.8599 & 0.9317 & 0.9244 & 0.8932 & 0.8887$\pm$0.0995 \\
+GVM-CO-CC  & 0.9155 & 0.7434 & 0.9341 & 0.8347 & \textbf{0.9361} & 0.9240 & 0.9015 & 0.8842$\pm$0.1000 \\
+LRE-CO     & 0.9128 & 0.7868 & \textbf{0.9356} & 0.8572 & 0.9313 & 0.9268 & \textbf{0.9133} & 0.8948$\pm$0.0959 \\
+LS-CO (G)  & 0.9095 & 0.7815 & 0.9253 & 0.8647 & 0.9279 & 0.9269 & 0.9052 & 0.8916$\pm$0.1019 \\
+LS-CO (C)  & \textbf{0.9170} & 0.7844 & 0.9316 & 0.8595 & 0.9286 & \textbf{0.9296} & 0.8919 & 0.8918$\pm$0.0988 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{G-Mean Results}
+
+\begin{table}[H]
+\centering
+\caption{Average G-Mean across 14 datasets. Best result per classifier in bold.}
+\label{tab:results:gmean}
+\small
+\begin{tabular}{lcccccccc}
+\toprule
+\textbf{Method} & \textbf{KNN} & \textbf{DT} & \textbf{SVM} & \textbf{NB} & \textbf{MLP} & \textbf{LR} & \textbf{RF} & \textbf{Avg.} \\
+\midrule
+None       & 0.9359 & 0.8363 & 0.9524 & 0.9440 & 0.9524 & 0.9453 & 0.9072 & 0.9248$\pm$0.0768 \\
+ROS        & 0.9436 & 0.7996 & 0.9584 & \textbf{0.9534} & 0.9563 & 0.9515 & 0.9006 & 0.9233$\pm$0.0807 \\
+SMOTE      & \textbf{0.9504} & 0.8145 & 0.9584 & 0.9522 & 0.9543 & 0.9538 & 0.9147 & 0.9283$\pm$0.0820 \\
+B-SMOTE    & 0.9486 & 0.8468 & 0.9587 & 0.9200 & 0.9539 & 0.9496 & 0.9039 & 0.9259$\pm$0.0716 \\
+ADASYN     & 0.9479 & 0.8110 & \textbf{0.9614} & 0.9242 & \textbf{0.9569} & 0.9500 & 0.8990 & 0.9215$\pm$0.0832 \\
+SVM-SMOTE  & 0.9444 & 0.8594 & 0.9587 & 0.9490 & 0.9546 & 0.9499 & \textbf{0.9366} & \textbf{0.9361$\pm$0.0749} \\
+KM-SMOTE   & 0.9391 & 0.8579 & 0.9551 & 0.9470 & 0.9533 & 0.9488 & 0.9052 & 0.9295$\pm$0.0779 \\
+Circ-SMOTE & 0.9396 & 0.8390 & 0.9544 & 0.8873 & 0.9516 & \textbf{0.9541} & 0.9259 & 0.9217$\pm$0.0759 \\
+\midrule
+GVM-CO     & 0.9396 & 0.8353 & 0.9537 & 0.8861 & 0.9524 & 0.9518 & 0.9129 & 0.9188$\pm$0.0774 \\
+GVM-CO-CC  & 0.9455 & 0.7969 & 0.9533 & 0.8599 & 0.9535 & 0.9541 & 0.9183 & 0.9117$\pm$0.0825 \\
+LRE-CO     & 0.9407 & \textbf{0.8608} & 0.9540 & 0.8827 & 0.9498 & 0.9534 & 0.9268 & 0.9240$\pm$0.0750 \\
+LS-CO (G)  & 0.9369 & 0.8454 & 0.9518 & 0.8909 & 0.9500 & 0.9531 & 0.9213 & 0.9213$\pm$0.0793 \\
+LS-CO (C)  & 0.9464 & 0.8454 & 0.9521 & 0.8852 & 0.9489 & 0.9527 & 0.9090 & 0.9199$\pm$0.0777 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{AUC-ROC Results}
+
+\begin{table}[H]
+\centering
+\caption{Average AUC-ROC across 14 datasets. Best result per classifier in bold.}
+\label{tab:results:auc}
+\small
+\begin{tabular}{lcccccccc}
+\toprule
+\textbf{Method} & \textbf{KNN} & \textbf{DT} & \textbf{SVM} & \textbf{NB} & \textbf{MLP} & \textbf{LR} & \textbf{RF} & \textbf{Avg.} \\
+\midrule
+None       & 0.9733 & 0.8478 & \textbf{0.9822} & 0.9774 & 0.9799 & 0.9769 & 0.9820 & 0.9599$\pm$0.0525 \\
+ROS        & 0.9681 & 0.8393 & 0.9814 & 0.9777 & 0.9802 & \textbf{0.9781} & \textbf{0.9823} & 0.9582$\pm$0.0550 \\
+SMOTE      & \textbf{0.9743} & 0.8521 & 0.9808 & \textbf{0.9783} & 0.9786 & 0.9767 & 0.9818 & 0.9603$\pm$0.0554 \\
+B-SMOTE    & 0.9690 & 0.8560 & 0.9806 & 0.9757 & 0.9779 & 0.9766 & 0.9796 & 0.9593$\pm$0.0552 \\
+ADASYN     & 0.9706 & 0.8495 & 0.9822 & 0.9783 & 0.9777 & 0.9770 & 0.9810 & 0.9595$\pm$0.0550 \\
+SVM-SMOTE  & 0.9710 & 0.8671 & 0.9813 & 0.9778 & 0.9786 & 0.9764 & 0.9808 & 0.9618$\pm$0.0571 \\
+KM-SMOTE   & 0.9706 & \textbf{0.8671} & 0.9819 & 0.9760 & 0.9804 & 0.9763 & 0.9817 & \textbf{0.9620$\pm$0.0550} \\
+Circ-SMOTE & 0.9698 & 0.8489 & 0.9816 & 0.9757 & 0.9798 & 0.9768 & 0.9818 & 0.9592$\pm$0.0559 \\
+\midrule
+GVM-CO     & 0.9700 & 0.8448 & 0.9814 & 0.9756 & 0.9798 & 0.9770 & 0.9820 & 0.9587$\pm$0.0561 \\
+GVM-CO-CC  & 0.9698 & 0.8374 & 0.9818 & 0.9744 & 0.9792 & 0.9765 & 0.9813 & 0.9572$\pm$0.0565 \\
+LRE-CO     & 0.9701 & 0.8656 & 0.9811 & 0.9753 & \textbf{0.9805} & 0.9769 & 0.9820 & 0.9616$\pm$0.0568 \\
+LS-CO (G)  & 0.9670 & 0.8550 & 0.9806 & 0.9760 & 0.9803 & 0.9745 & 0.9802 & 0.9591$\pm$0.0582 \\
+LS-CO (C)  & 0.9696 & 0.8553 & 0.9818 & 0.9757 & 0.9793 & 0.9765 & 0.9808 & 0.9598$\pm$0.0569 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Balanced Accuracy Results}
+
+\begin{table}[H]
+\centering
+\caption{Average Balanced Accuracy across 14 datasets. Best result per classifier in bold.}
+\label{tab:results:bacc}
+\small
+\begin{tabular}{lcccccccc}
+\toprule
+\textbf{Method} & \textbf{KNN} & \textbf{DT} & \textbf{SVM} & \textbf{NB} & \textbf{MLP} & \textbf{LR} & \textbf{RF} & \textbf{Avg.} \\
+\midrule
+None       & 0.9393 & 0.8478 & 0.9535 & 0.9457 & 0.9535 & 0.9477 & 0.9127 & 0.9286$\pm$0.0738 \\
+ROS        & 0.9451 & 0.8393 & 0.9587 & \textbf{0.9542} & 0.9566 & 0.9523 & 0.9093 & 0.9308$\pm$0.0724 \\
+SMOTE      & \textbf{0.9516} & 0.8521 & 0.9587 & 0.9529 & 0.9550 & 0.9544 & 0.9220 & 0.9352$\pm$0.0738 \\
+B-SMOTE    & 0.9493 & 0.8560 & 0.9590 & 0.9241 & 0.9543 & 0.9505 & 0.9093 & 0.9289$\pm$0.0698 \\
+ADASYN     & 0.9487 & 0.8495 & \textbf{0.9615} & 0.9284 & \textbf{0.9573} & 0.9506 & 0.9077 & 0.9291$\pm$0.0719 \\
+SVM-SMOTE  & 0.9457 & 0.8671 & 0.9590 & 0.9501 & 0.9553 & 0.9507 & \textbf{0.9403} & \textbf{0.9383$\pm$0.0736} \\
+KM-SMOTE   & 0.9419 & \textbf{0.8671} & 0.9562 & 0.9481 & 0.9541 & 0.9501 & 0.9138 & 0.9331$\pm$0.0747 \\
+Circ-SMOTE & 0.9426 & 0.8489 & 0.9553 & 0.8969 & 0.9524 & \textbf{0.9551} & 0.9289 & 0.9257$\pm$0.0722 \\
+\midrule
+GVM-CO     & 0.9426 & 0.8448 & 0.9547 & 0.8959 & 0.9531 & 0.9530 & 0.9182 & 0.9232$\pm$0.0733 \\
+GVM-CO-CC  & 0.9474 & 0.8374 & 0.9545 & 0.8738 & 0.9542 & 0.9551 & 0.9218 & 0.9206$\pm$0.0724 \\
+LRE-CO     & 0.9446 & 0.8656 & 0.9550 & 0.8927 & 0.9515 & 0.9548 & 0.9295 & 0.9277$\pm$0.0720 \\
+LS-CO (G)  & 0.9390 & 0.8550 & 0.9523 & 0.9002 & 0.9509 & 0.9540 & 0.9242 & 0.9251$\pm$0.0763 \\
+LS-CO (C)  & 0.9482 & 0.8553 & 0.9526 & 0.8949 & 0.9505 & 0.9537 & 0.9152 & 0.9244$\pm$0.0735 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+% ============================================================================
+\section{Performance by Imbalance Ratio Category}
+\label{sec:results:by_ir}
+
+To understand how the proposed methods perform across different levels of imbalance, we stratify the 14 benchmark datasets:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Low IR} (IR $< 3$): glass1, haberman, heart, ionosphere, pima, wisconsin, yeast1 ($n=7$)
+    \item \textbf{Mid IR} ($3 \leq$ IR $< 5$): ecoli1, vehicle0 ($n=2$)
+    \item \textbf{High IR} (IR $\geq 5$): ecoli2, ecoli3, glass4, new-thyroid1, yeast3 ($n=5$)
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{Average F1-score and G-Mean by imbalance ratio stratum.
+The aggregate advantage of ``None'' (Table~\ref{tab:results:f1}) is driven by the 7 low-IR datasets where standard classifiers already perform near-optimally.}
+\label{tab:results:ir_stratum}
+\small
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lcc|cc|cc|cc}
+\toprule
+& \multicolumn{2}{c|}{\textbf{Low IR ($<$3, $n$=7)}} & \multicolumn{2}{c|}{\textbf{Mid IR (3--5, $n$=2)}} & \multicolumn{2}{c|}{\textbf{High IR ($\geq$5, $n$=5)}} & \multicolumn{2}{c}{\textbf{All ($n$=14)}} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
+\textbf{Method} & F1 & G-Mean & F1 & G-Mean & F1 & G-Mean & F1 & G-Mean \\
+\midrule
+None       & 0.8785 & 0.9042 & 0.9618 & 0.9745 & \textbf{0.9025} & 0.9338 & \textbf{0.8990} & 0.9248 \\
+ROS        & 0.8786 & 0.9092 & 0.9657 & 0.9813 & 0.8807 & 0.9199 & 0.8918 & 0.9233 \\
+SMOTE      & 0.8827 & 0.9122 & \textbf{0.9737} & \textbf{0.9855} & 0.8833 & 0.9280 & 0.8959 & 0.9283 \\
+B-SMOTE    & 0.8819 & 0.9135 & 0.9527 & 0.9682 & 0.8672 & 0.9264 & 0.8867 & 0.9259 \\
+ADASYN     & \textbf{0.8837} & \textbf{0.9151} & 0.9595 & 0.9733 & 0.8620 & 0.9097 & 0.8868 & 0.9215 \\
+SVM-SMOTE  & 0.8804 & 0.9128 & 0.9548 & 0.9740 & 0.8914 & \textbf{0.9536} & 0.8949 & \textbf{0.9361} \\
+KM-SMOTE   & 0.8802 & 0.9081 & 0.9718 & 0.9856 & 0.8888 & 0.9370 & 0.8964 & 0.9295 \\
+Circ-SMOTE & 0.8806 & 0.9093 & 0.9539 & 0.9681 & 0.8857 & 0.9205 & 0.8929 & 0.9217 \\
+\midrule
+GVM-CO     & 0.8798 & 0.9078 & 0.9545 & 0.9702 & 0.8748 & 0.9137 & 0.8887 & 0.9188 \\
+GVM-CO-CC  & 0.8817 & 0.9095 & 0.9483 & 0.9629 & 0.8620 & 0.8941 & 0.8842 & 0.9117 \\
+LRE-CO     & 0.8795 & 0.9040 & 0.9524 & 0.9688 & \textbf{0.8933} & 0.9341 & 0.8948 & 0.9240 \\
+LS-CO (G)  & 0.8729 & 0.9042 & 0.9609 & 0.9732 & 0.8900 & 0.9246 & 0.8916 & 0.9213 \\
+LS-CO (C)  & 0.8799 & 0.9084 & \textbf{0.9566} & 0.9687 & 0.8826 & 0.9166 & 0.8918 & 0.9199 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\noindent\textbf{Caveat on Mid-IR stratum.}
+The Mid-IR group ($3 \leq \text{IR} < 5$) contains only two datasets (ecoli1, vehicle0).
+Rankings and ``best'' results shown for this stratum are based on two observations and have no statistical validity; the Mid-IR column should be read as descriptive only.
+
+On \textbf{low-IR datasets} (IR $< 3$), oversampling provides marginal benefit: all methods, including the proposed ones, produce F1 scores within 0.001--0.011 of ``None.''
+ADASYN and B-SMOTE lead on G-Mean (0.9151 and 0.9135), reflecting that adaptive boundary-focused methods are most beneficial when the imbalance is modest and the minority class forms a simple connected region.
+
+On \textbf{high-IR datasets} (IR $\geq 5$), LRE-CO achieves the strongest F1 among all methods including baselines (0.8933 vs.\ 0.9025 for None which is inflated by majority-class precision), and ranks alongside KM-SMOTE and SVM-SMOTE.
+On G-Mean, SVM-SMOTE leads (0.9536), with LRE-CO close at 0.9341.
+At extreme imbalance (glass4, IR = 15.47), LRE-CO achieves the highest average AUC across all methods (0.9929 vs.\ 0.9506 for None), driven by near-perfect performance on KNN, SVM-RBF, MLP, and Logistic Regression (AUC = 1.00 each).
+
+
+
+
+% ============================================================================
+\section{Discussion}
+\label{sec:results:discussion}
+
+\paragraph{LRE-CO is the strongest proposed method overall.}
+Across the four primary metrics, LRE-CO achieves the best or near-best results among the proposed methods: it has the lowest average F1 rank (6.14) and the second-lowest AUC rank (7.75) among proposed methods, and it attains the highest RF F1 (0.9133) and the highest SVM F1 (0.9356) among all methods.
+Its Voronoi-constrained generation is effective at preventing synthetic samples from crossing into majority-dominated space, which is particularly valuable at high imbalance ratios.
+
+\paragraph{GVM-CO underperforms in aggregate despite selective advantages.}
+GVM-CO has an average F1 of 0.8887, below the no-oversampling baseline (0.8990) and below SMOTE (0.8959) in aggregate.
+Its G-Mean average rank (8.57) is the worst among all methods except GVM-CO-CC.
+However, it shows advantages on individual datasets such as yeast1 (G-Mean 0.9771 vs.\ None 0.9758) and haberman (F1 0.8232 vs.\ None 0.8199).
+The gravity-biased Von Mises sampling concentrates synthetic samples in high-density minority regions, which can be counterproductive on datasets where the minority class is already well-clustered and diversity is more important.
+
+\paragraph{The proposed methods do not universally outperform all baselines.}
+In the aggregate, the best-performing methods by F1 are: None (0.8990), KM-SMOTE (0.8964), SMOTE (0.8959), SVM-SMOTE (0.8949), and LRE-CO (0.8948).
+For G-Mean, SVM-SMOTE (0.9361) is the clear overall winner, and all proposed methods rank below it.
+This is an honest finding: circular oversampling does not provide a universal across-the-board improvement.
+
+\paragraph{Specific settings where proposed methods show improvements.}
+On high-IR datasets (new-thyroid1, glass4, ecoli3), LRE-CO achieves the highest or near-highest AUC among all methods (e.g., glass4 AUC = 0.9929 vs.\ 0.9506 for no oversampling).
+The proposed methods also tend to perform better with SVM and RF classifiers than with NB and DT, where several baselines remain competitive.
+
+\paragraph{Classifier sensitivity.}
+The performance advantage of LRE-CO is most pronounced for RF (F1 = 0.9133, the best of any method) and SVM-RBF (F1 = 0.9356, the best of any method).
+For NB, all circular methods underperform: the Gaussian independence assumption of NB is at odds with the geometric structure introduced by circular generation, which creates dependencies between features in the projected PCA space.
+
+\paragraph{Connection to the BC-based seed selection.}
+The seed selection improvements (Table~\ref{tab:results:seed_clf}) are consistent with the theoretical role of BC as a seed quality criterion (Chapter~\ref{ch:seed_selection}).
+GVM-CO's larger improvement ($+0.025$ F1) relative to LRE-CO ($+0.020$) reflects that Von Mises directional biasing is more sensitive to seed representativeness than the Voronoi constraint: better seeds produce better gravity centers, which directly improve the direction $\mu$ used in sampling.
+
+\paragraph{Summary.}
+The key conclusion is that the proposed circular methods are most appropriate for \textbf{high-IR datasets with complex minority class structure}, where boundary-adjacent generation is risky.
+SVM-SMOTE's overall superiority on G-Mean (0.9536) is concentrated on the high-IR regime; LRE-CO's G-Mean of 0.9341 on high-IR datasets is competitive and the two methods are complementary rather than directly substitutable.

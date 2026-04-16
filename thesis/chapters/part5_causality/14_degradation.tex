@@ -1,0 +1,144 @@
+% =============================================================================
+% Chapter 14 -- Degradation Results
+% =============================================================================
+
+\chapter{Degradation Results}
+\label{ch:degradation}
+
+\section{Overview}
+\label{sec:deg:overview}
+
+This chapter presents Phase~1 results: the effect of progressively removing minority-class instances on classification performance across ten datasets and five classifiers.
+Figures~\ref{fig:deg_auc}--\ref{fig:deg_spec} show the signature degradation curves (left panels) and recovery curves (right panels) for each of the six metrics, averaged across ten datasets with $\pm 1$ standard-deviation bands.
+Table~\ref{tab:deg_summary} gives the mean metric values at the balanced baseline and at 80\% removal for each classifier.
+
+
+% ============================================================================
+\section{Degradation Signature Figures}
+\label{sec:deg:shape}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{sweep_auc.pdf}
+  \caption{AUC-ROC sweep: degradation (left) and recovery (right) curves averaged across ten datasets.
+  Shaded bands show $\pm 1$ standard deviation across datasets.
+  The gold band on the degradation panel marks the non-linear threshold zone (40--50\% removal).
+  The dashed horizontal line on the recovery panel marks the balanced baseline.}
+  \label{fig:deg_auc}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{sweep_f1.pdf}
+  \caption{F1-Score sweep: degradation and recovery curves.
+  F1 degrades more sharply than AUC, consistent with its higher sensitivity to minority recall~\cite{chawla2002smote}.}
+  \label{fig:deg_f1}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{sweep_gmean.pdf}
+  \caption{G-Mean sweep.
+  G-Mean shows the steepest degradation among all metrics, reflecting its multiplicative penalty for any imbalance between sensitivity and specificity~\cite{kubat1997addressing}.}
+  \label{fig:deg_gmean}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{sweep_bal_acc.pdf}
+  \caption{Balanced Accuracy sweep.
+  BA degrades moderately, tracking the arithmetic mean of sensitivity (which falls) and specificity (which stays stable)~\cite{fernandez2018learning}.}
+  \label{fig:deg_balacc}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{sweep_sens.pdf}
+  \caption{Sensitivity sweep.
+  Sensitivity is the most affected metric, as minority-class recall collapses once the minority density drops below the classifier's learning threshold~\cite{he2009learning}.}
+  \label{fig:deg_sens}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{sweep_spec.pdf}
+  \caption{Specificity sweep.
+  Specificity is largely unaffected during degradation because the majority class remains constant, confirming that the observed performance drop is concentrated on the minority side~\cite{fernandez2018learning}.}
+  \label{fig:deg_spec}
+\end{figure}
+
+
+% ============================================================================
+\section{Summary Results Table}
+\label{sec:deg:table}
+
+Table~\ref{tab:deg_summary} reports mean metric values at the balanced starting point ($\IR = 1$) and after 80\% minority removal ($\IR \approx 4$), averaged across all ten datasets.
+
+\begin{table}[ht]
+\centering
+\caption{Mean metric values (across 10 datasets) at balanced baseline vs.\ 80\% minority removal.
+Best classifier at each removal level is shown in \textbf{bold}.}
+\label{tab:deg_summary}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{l cc cc cc}
+\toprule
+& \multicolumn{2}{c}{AUC} & \multicolumn{2}{c}{F1} & \multicolumn{2}{c}{G-Mean} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Classifier & $\IR=1$ & $\IR=4$ & $\IR=1$ & $\IR=4$ & $\IR=1$ & $\IR=4$ \\
+\midrule
+\textbf{RF}   & \textbf{0.932} & \textbf{0.741} & \textbf{0.889} & \textbf{0.601} & \textbf{0.906} & \textbf{0.631} \\
+DT            & 0.854 & 0.672 & 0.821 & 0.531 & 0.839 & 0.557 \\
+KNN           & 0.878 & 0.658 & 0.844 & 0.512 & 0.861 & 0.541 \\
+LR            & 0.861 & 0.651 & 0.832 & 0.505 & 0.848 & 0.530 \\
+MLP           & 0.901 & 0.698 & 0.866 & 0.558 & 0.880 & 0.581 \\
+\midrule
+\textbf{Mean} & 0.885 & 0.684 & 0.850 & 0.541 & 0.867 & 0.568 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Across all three primary metrics the mean drop over the full 80-step sweep is substantial: AUC falls from 0.885 to 0.684 ($-0.201$), F1 from 0.850 to 0.541 ($-0.309$), and G-Mean from 0.867 to 0.568 ($-0.299$).
+The larger absolute drop in F1 and G-Mean relative to AUC is consistent with the known threshold sensitivity of those metrics to minority-class recall~\cite{kubat1997addressing, chawla2002smote}: AUC integrates over all thresholds and is therefore more forgiving in the early degradation phase.
+
+
+% ============================================================================
+\section{RQ1: Monotonicity and Threshold Effects}
+\label{sec:deg:rq1}
+
+Across all six metrics and all ten datasets, degradation is broadly monotonic: as more minority instances are removed, classification performance decreases consistently~\cite{weiss2003effect, japkowicz2002class}.
+However, the rate of decrease is not uniform.
+In the early degradation phase (0--30\% removal), most metrics decline slowly.
+Beyond approximately 40--50\% removal ($\IR \approx 1.5$--$2$), performance drops more sharply, particularly for Sensitivity and G-Mean (Figures~\ref{fig:deg_sens} and~\ref{fig:deg_gmean}), suggesting a threshold effect.
+
+This non-linearity is consistent with the theoretical framework of Japkowicz and Stephen~\cite{japkowicz2002class}, who argued that classifier performance degrades slowly until a critical density threshold is crossed, after which minority-class learning collapses.
+Weiss and Provost~\cite{weiss2003effect} made a similar observation for decision trees: generalization error is stable until the minority representation drops below a dataset-specific threshold, then degrades sharply.
+
+The threshold zone (40--50\% removal, highlighted in Figure~\ref{fig:deg_auc}) is consistent across all five classifiers, though the absolute performance at the threshold differs by classifier family (Section~\ref{sec:deg:rq2}).
+
+\paragraph{Random removal and distributional bias.}
+Because instances are removed uniformly at random, the degradation process imposes no distributional bias on the surviving minority class.
+Any performance drop is therefore attributable to the reduced count and increased imbalance ratio.
+The random removal protocol ensures that the threshold effect is caused by the imbalance ratio itself, not by a systematic removal policy that selectively targets particular regions of the feature space.
+
+
+% ============================================================================
+\section{RQ2: Classifier Robustness}
+\label{sec:deg:rq2}
+
+Random Forest (RF) is the most robust to degradation across all metrics (Table~\ref{tab:deg_summary}): its AUC curve declines from 0.932 to 0.741 (a drop of 0.191), the smallest absolute drop of all five classifiers.
+This is consistent with the known robustness of ensemble methods to class imbalance~\cite{breiman2001random, galar2012review}: bagging reduces variance introduced by the minority distribution shift, and the majority-vote mechanism partially compensates for minority under-representation~\cite{galar2012review}.
+
+Logistic Regression (LR) and K-Nearest Neighbor (KNN) are the most sensitive to degradation.
+LR's linear decision boundary cannot adapt to the shifting balance of the training distribution~\cite{fernandez2018learning}: as fewer minority instances are available, the optimal linear boundary shifts toward the minority-free region.
+KNN's distance-based decision rule is directly impaired by minority sparsity~\cite{cover1967nearest, kubat1997addressing}: with fewer minority neighbors available, test instances near the decision boundary are incorrectly labeled by majority votes.
+
+MLP shows intermediate sensitivity, degrading more slowly than LR but more quickly than RF.
+This is consistent with the finding of Haixiang et al.~\cite{haixiang2017learning} that neural networks exhibit better minority-class retention than linear models but are still outperformed by ensembles under strong imbalance.
+
+Decision Tree (DT) exhibits occasional non-monotonic behavior on some datasets, with temporary recovery at intermediate removal fractions.
+This is attributable to the CART splitting criterion~\cite{breiman1984cart}: axis-aligned splits can occasionally align with the reduced minority set more cleanly than with the full set, producing a temporary local optimum.
+Japkowicz and Stephen~\cite{japkowicz2002class} observed similar phenomena in tree-based classifiers under selective minority removal.
+
+\paragraph{Practical implication.}
+The classifier-family sensitivity hierarchy (RF $>$ MLP $>$ DT $>$ LR $\approx$ KNN) suggests that the ``imbalance problem'' is partly a problem of inappropriate algorithm choice~\cite{ling2004exploration}: a well-tuned ensemble on a moderately imbalanced dataset ($\IR < 4$) may outperform any oversampled logistic regression.
+This finding directly motivates Part~V's recommendation (Chapter~\ref{ch:discussion}) that classifier selection should be considered alongside oversampling strategy.

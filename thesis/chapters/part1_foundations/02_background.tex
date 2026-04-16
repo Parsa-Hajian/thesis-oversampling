@@ -1,0 +1,242 @@
+% =============================================================================
+% Chapter 2 -- Background
+% =============================================================================
+
+\chapter{Background}
+\label{ch:background}
+
+This chapter provides the theoretical foundations upon which the contributions of this thesis are built:
+the class imbalance problem and why standard classifiers fail under it, evaluation metrics for imbalanced data, SMOTE's geometric limitation, clustering methods, cross-validation, statistical hypothesis testing for multi-method comparison, the Von Mises distribution, and distributional similarity measures.
+
+% ============================================================================
+\section{The Class Imbalance Problem}
+\label{sec:bg:imbalance}
+
+\subsection{Definition and Quantification}
+
+\begin{definition}[Imbalance Ratio]
+\label{def:ir}
+The \emph{imbalance ratio} (IR) of a binary dataset is defined as
+\begin{equation}
+  \IR = \frac{n_{\mathrm{maj}}}{n_{\mathrm{min}}},
+  \label{eq:ir}
+\end{equation}
+where $n_{\mathrm{maj}}$ is the number of majority-class instances and $n_{\mathrm{min}}$ is the number of minority-class instances.
+An IR of 1.0 indicates perfect balance; larger values indicate increasing imbalance.
+\end{definition}
+
+Datasets with $\IR < 3$ are considered mildly imbalanced, those with $3 \leq \IR < 9$ are moderately imbalanced, and those with $\IR \geq 9$ are highly imbalanced~\cite{fernandez2018learning}.
+Some applications feature extreme imbalance with $\IR > 100$.
+
+\subsection{Why Standard Classifiers Fail}
+
+Standard algorithms minimize the empirical risk:
+\begin{equation}
+  \hat{R}(h) = \frac{1}{n}\sum_{i=1}^n \ell(h(\vx_i), y_i),
+  \label{eq:empirical_risk}
+\end{equation}
+where $\ell$ is the loss function.
+When classes are imbalanced, the majority class contributes disproportionately.
+A classifier that always predicts majority achieves $\IR/(1+\IR)$ accuracy while having zero sensitivity for the minority~\cite{japkowicz2002class}.
+
+This problem manifests specifically across classifier families:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Decision trees:} Information gain and Gini impurity are dominated by the majority class~\cite{cieslak2012hellinger}.
+  \item \textbf{SVMs:} The separating hyperplane is pushed toward the minority region~\cite{akbani2004applying}.
+  \item \textbf{Neural networks:} The gradient of the cross-entropy loss is dominated by majority examples~\cite{buda2018systematic}.
+  \item \textbf{$k$-Nearest Neighbours:} The neighbourhood of a minority instance is likely to contain a majority of majority points~\cite{zhang2003knearest}.
+\end{itemize}
+
+\subsection{Real-World Manifestations}
+
+Table~\ref{tab:bg:realworld} illustrates the prevalence of class imbalance across application domains.
+
+\begin{table}[ht]
+\centering
+\caption{Examples of class imbalance in real-world applications.}
+\label{tab:bg:realworld}
+\begin{tabular}{llc}
+\toprule
+\textbf{Domain} & \textbf{Task} & \textbf{Typical IR} \\
+\midrule
+Finance & Credit card fraud detection & 500:1--1000:1 \\
+Medicine & Rare disease diagnosis & 50:1--200:1 \\
+Manufacturing & Defect detection & 10:1--100:1 \\
+Cybersecurity & Intrusion detection & 100:1--10{,}000:1 \\
+Oil \& Gas & Oil spill detection & 20:1--500:1 \\
+Text mining & Spam detection & 5:1--20:1 \\
+Bioinformatics & Protein function prediction & 10:1--100:1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+\section{Evaluation Metrics for Imbalanced Data}
+\label{sec:bg:metrics}
+
+Standard accuracy is misleading when classes are imbalanced; a majority-only predictor achieves $\IR/(1+\IR)$ accuracy at zero minority-class recall.
+Table~\ref{tab:bg:metrics} summarises the six metrics used throughout this thesis; all are computed from the entries of the binary confusion matrix (TP, FP, FN, TN).
+
+\begin{table}[ht]
+\centering
+\caption{Evaluation metrics for imbalanced classification used in this thesis.}
+\label{tab:bg:metrics}
+\small
+\begin{tabular}{llp{5.8cm}}
+\toprule
+\textbf{Metric} & \textbf{Formula} & \textbf{Key property for imbalanced data} \\
+\midrule
+Sensitivity (Recall) & $\mathrm{TP}/(\mathrm{TP}+\mathrm{FN})$ & Measures minority-class coverage; collapses to 0 under naive majority predictor \\
+Specificity          & $\mathrm{TN}/(\mathrm{TN}+\mathrm{FP})$ & Measures majority-class accuracy \\
+$F_1$                & $2\mathrm{TP}/(2\mathrm{TP}+\mathrm{FP}+\mathrm{FN})$ & Harmonic mean of precision and recall~\cite{sokolova2009systematic} \\
+G-Mean               & $\sqrt{\text{Sens.} \times \text{Spec.}}$ & Zero if either class is entirely missed~\cite{kubat1997addressing} \\
+Balanced Accuracy    & $(\text{Sens.}+\text{Spec.})/2$ & Trivial predictor achieves 0.5~\cite{brodersen2010balanced} \\
+AUC                  & $\int_0^1 \text{TPR}\,d(\text{FPR})$ & Threshold-free; equals $P(\hat{s}^+>\hat{s}^-)$~\cite{fawcett2006introduction} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+\section{SMOTE and Its Limitations}
+\label{sec:bg:smote}
+
+SMOTE~\cite{chawla2002smote} generates synthetic samples by linearly interpolating between a minority seed $\vx_i$ and a randomly chosen $k$-NN $\vx_j$:
+\begin{equation}
+  \vx_{\mathrm{new}} = \vx_i + \lambda(\vx_j - \vx_i), \quad \lambda \sim \mathcal{U}(0,1).
+  \label{eq:smote_bg}
+\end{equation}
+This places all synthetic samples on line segments in the minority class, generating a $1$-D submanifold of the $d$-dimensional feature space.
+The geometric limitation motivates the circular generation framework of Part~IV.
+
+% ============================================================================
+\section{Clustering and Cross-Validation}
+\label{sec:bg:clustering}
+
+Two clustering algorithms are used in the seed selection and algorithm components of this thesis.
+\textbf{$K$-means}~\cite{macqueen1967some} with $k$-means++ initialization~\cite{arthur2007kmeans} partitions the minority class into $K$ convex clusters by minimizing total within-cluster variance; its spherical cluster assumption aligns well with the circular geometry of our generation regions.
+\textbf{HAC} (hierarchical agglomerative clustering with Ward's linkage~\cite{murtagh2012algorithms}) is used as a comparison baseline in the ablation of Chapter~\ref{ch:ablation}; it captures non-spherical shapes but produces unbalanced clusters on small minority sets.
+
+For evaluation, stratified $k$-fold cross-validation~\cite{kohavi1995study} is used throughout to preserve class ratios per fold.
+When evaluating oversampling, synthesis must be applied \emph{inside the training partition of each fold only}; applying it before splitting introduces data leakage and produces optimistically biased estimates~\cite{kaufman2012leakage, cawley2010over}.
+The four-rule leakage-safe protocol used in Part~V is described in Section~\ref{sec:setup:leakage}.
+
+% ============================================================================
+\section{Statistical Hypothesis Testing for Method Comparison}
+\label{sec:bg:statistics}
+
+\subsection{Friedman Test}
+
+The Friedman test~\cite{friedman1937use} is a non-parametric test for comparing $K$ algorithms across $N$ datasets.
+Let $r_i^j$ denote the rank of algorithm $j$ on dataset $i$.
+The Friedman statistic is:
+\begin{equation}
+  F_F = \frac{12N}{K(K+1)} \left[ \sum_j \bar{r}_j^2 - \frac{K(K+1)^2}{4} \right],
+  \label{eq:friedman}
+\end{equation}
+where $\bar{r}_j$ is the average rank of algorithm $j$.
+Under the null hypothesis that all algorithms are equivalent, $F_F$ follows a $\chi^2$ distribution with $K-1$ degrees of freedom.
+
+\subsection{Holm's Procedure for Post-Hoc Comparisons}
+
+When the Friedman test rejects the null, Holm's step-down procedure~\cite{holm1979simple} controls the family-wise error rate for pairwise comparisons between a control method and all others.
+Pairwise comparisons use the Wilcoxon signed-rank test~\cite{wilcoxon1945individual}.
+
+\subsection{Nemenyi Critical Difference Diagrams}
+
+Nemenyi critical difference (CD) diagrams~\cite{demsar2006statistical} provide a visual summary.
+The critical difference for a test at significance level $\alpha$ with $K$ algorithms and $N$ datasets is:
+\begin{equation}
+  \mathrm{CD} = q_\alpha \sqrt{\frac{K(K+1)}{6N}},
+  \label{eq:cd}
+\end{equation}
+where $q_\alpha$ is the critical value from the studentised range distribution.
+Algorithms whose average ranks differ by less than CD are connected by a horizontal bar in the diagram, indicating no statistically significant difference.
+
+% ============================================================================
+\section{The Von Mises Distribution}
+\label{sec:bg:vonmises}
+
+The Von Mises distribution is the natural analogue of the Gaussian distribution on the unit circle.
+A random angle $\theta \sim \mathrm{VM}(\mu, \kappa)$ has probability density function:
+\begin{equation}
+  p(\theta) = \frac{\exp(\kappa \cos(\theta - \mu))}{2\pi I_0(\kappa)},
+  \label{eq:vonmises}
+\end{equation}
+where $\mu \in [0, 2\pi)$ is the mean direction, $\kappa \geq 0$ is the concentration parameter, and $I_0(\kappa) = \frac{1}{2\pi}\int_0^{2\pi} e^{\kappa\cos\theta}\,d\theta$ is the modified Bessel function of order zero.
+
+When $\kappa = 0$, the distribution is uniform on $[0, 2\pi)$; as $\kappa \to \infty$, the distribution concentrates around $\mu$.
+The Von Mises distribution is used in GVM-CO (Chapter~\ref{ch:proposed_methods}) to bias angular sampling toward the gravity center of each minority cluster, with $\kappa$ computed from the cluster's gravity score~\cite{mardia2000directional}.
+
+% ============================================================================
+\section{Distributional Similarity Measures}
+\label{sec:bg:distrib_similarity}
+
+This section surveys the distributional similarity measures used in the seed selection criterion of Part~II.
+
+\subsection{Histogram Intersection}
+\label{sec:bg:histogram_intersection}
+
+Histogram intersection was introduced by Swain and Ballard~\cite{swain1991color} for colour-based image retrieval.
+Given two histograms $h$ and $h'$ with the same bins, the intersection is $\HI(h,h') = \sum_b \min(h_b, h'_b)$.
+When histograms record raw counts, the result depends on sample sizes $n$ and $m$ unless explicitly normalised.
+Swain and Ballard normalise by $\min(\sum h_b, \sum h'_b)$, which introduces asymmetry when $n \neq m$.
+The Bhattacharyya Coefficient (below) avoids this by using normalised proportions and a geometric-mean overlap, yielding a symmetric, sample-size-invariant score.
+
+\subsection{Bhattacharyya Coefficient}
+
+The Bhattacharyya coefficient~\cite{bhattacharyya1943measure} is $\BC(P,Q) = \sum_b \sqrt{p_b q_b} \in [0,1]$.
+It is symmetric and bounded but uses the geometric mean rather than the minimum, making it less sensitive to partial mismatches.
+The relationship $\BC \leq 1 - \TV^2/2$ holds, but $\BC$ does not equal $1 - \TV$ in general.
+
+\subsection{Maximum Mean Discrepancy (MMD)}
+
+MMD~\cite{gretton2012kernel} is an integral probability metric associated with a reproducing kernel Hilbert space.
+It requires choice of a kernel and bandwidth and is quadratic in sample size ($O(n^2)$), limiting scalability.
+MMD lacks a direct percentage interpretation.
+
+\subsection{Jensen--Shannon Divergence (JSD)}
+
+JSD~\cite{lin1991divergence} symmetrises KL divergence via the mixture $M = (P+Q)/2$:
+\begin{equation}
+  \JS(P,Q) = \frac{1}{2}\KL(P\|M) + \frac{1}{2}\KL(Q\|M) \in [0, \log 2].
+  \label{eq:jsd}
+\end{equation}
+JSD requires smoothing for empty bins and lacks a direct percentage interpretation.
+It is used as a component of the seed selection criterion in Chapter~\ref{ch:seed_selection}.
+
+\subsection{Comparison Table}
+
+Table~\ref{tab:bg:measures_comparison} summarises the five desiderata for each measure.
+
+\begin{table}[ht]
+\centering
+\caption{Comparison of distributional similarity measures against the five desiderata for the finite-sample, multi-dimensional setting.
+\checkmark~= satisfied, $\approx$ = approximately satisfied, $\times$ = not satisfied.}
+\label{tab:bg:measures_comparison}
+\small
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Measure} & \textbf{Scale-inv.} & \textbf{Bounded} & \textbf{Marginal} & \textbf{TV identity} & \textbf{Efficient} \\
+\midrule
+Histogram Intersection & $\times$ & \checkmark & \checkmark & $\times$ & \checkmark \\
+Bhattacharyya & $\times$ & \checkmark & \checkmark & $\times$ & \checkmark \\
+KL Divergence & $\times$ & $\times$ & \checkmark & $\times$ & \checkmark \\
+JSD & $\times$ & \checkmark & \checkmark & $\times$ & \checkmark \\
+MMD & $\times$ & $\times$ & $\times$ & $\times$ & $\times$ \\
+Wasserstein-1 & $\times$ & $\times$ & $\times$ & $\times$ & $\times$ \\
+KS Statistic & $\times$ & \checkmark & \checkmark & $\times$ & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Among these measures, the Bhattacharyya Coefficient~\cite{bhattacharyya1943measure} offers the best combination of boundedness, symmetry, marginal decomposability, and computational efficiency.
+It is adopted as the primary marginal similarity metric in the seed selection criterion of Chapter~\ref{ch:seed_selection}.
+
+% ============================================================================
+\section{Chapter Summary}
+\label{sec:bg:summary}
+
+This chapter has provided the theoretical foundations for the works presented in this thesis: the class imbalance problem and why standard classifiers fail, evaluation metrics for imbalanced data (Table~\ref{tab:bg:metrics}), SMOTE and its geometric limitations, clustering and cross-validation, statistical testing (Friedman, Nemenyi), the Von Mises distribution, and distributional similarity measures.
+
+The geometric limitation of linear interpolation motivates the circular oversampling methods of Part~III.
+The absence of controlled causal evidence for the imbalance hypothesis motivates Part~IV.

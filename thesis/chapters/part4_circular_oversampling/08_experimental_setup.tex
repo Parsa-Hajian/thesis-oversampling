@@ -1,0 +1,240 @@
+% =============================================================================
+% Chapter 8 -- Experimental Setup
+% =============================================================================
+
+\chapter{Experimental Setup}
+\label{ch:experimental_setup}
+
+This chapter details the experimental methodology used to evaluate the proposed circular oversampling algorithms.
+We describe the benchmark datasets, classifiers, evaluation metrics, validation protocol, comparison methods, hyperparameter settings, and statistical testing framework.
+
+
+% ============================================================================
+\section{Benchmark Datasets}
+\label{sec:setup:datasets}
+
+We evaluate the proposed methods on 14 binary classification datasets from the KEEL~\cite{alcala2011keel} and UCI~\cite{uci2017} repositories.
+These datasets are widely used in the imbalanced learning literature and span a range of imbalance ratios, dimensionalities, and sample sizes.
+
+\begin{table}[H]
+\centering
+\caption{Summary of the 14 benchmark datasets. IR = Imbalance Ratio ($n_{\text{maj}}/n_{\text{min}}$).}
+\label{tab:setup:datasets}
+\begin{tabular}{llccccl}
+\toprule
+\textbf{No.} & \textbf{Dataset} & \textbf{Source} & \textbf{Samples} & \textbf{Features} & \textbf{IR} & \textbf{Category} \\
+\midrule
+1  & heart         & UCI  & 303  & 13 & 1.25  & Low \\
+2  & ionosphere    & UCI  & 351  & 34 & 1.79  & Low \\
+3  & glass1        & KEEL & 214  & 9  & 1.82  & Low \\
+4  & wisconsin     & UCI  & 699  & 9  & 1.86  & Low \\
+5  & pima          & UCI  & 768  & 8  & 1.87  & Low \\
+6  & yeast1        & KEEL & 1484 & 8  & 2.46  & Moderate \\
+7  & haberman      & UCI  & 306  & 3  & 2.78  & Moderate \\
+8  & vehicle0      & KEEL & 846  & 18 & 3.25  & Moderate \\
+9  & ecoli1        & KEEL & 336  & 7  & 3.36  & Moderate \\
+10 & new-thyroid1  & KEEL & 215  & 5  & 5.14  & High \\
+11 & ecoli2        & KEEL & 336  & 7  & 5.46  & High \\
+12 & yeast3        & KEEL & 1484 & 8  & 8.10  & High \\
+13 & ecoli3        & KEEL & 336  & 7  & 8.60  & High \\
+14 & glass4        & KEEL & 214  & 9  & 15.47 & Extreme \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The datasets are grouped into four IR categories:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Low IR} (1.0--2.0): heart, ionosphere, glass1, wisconsin, pima.
+    \item \textbf{Moderate IR} (2.0--5.0): yeast1, haberman, vehicle0, ecoli1.
+    \item \textbf{High IR} (5.0--10.0): new-thyroid1, ecoli2, yeast3, ecoli3.
+    \item \textbf{Extreme IR} ($>$10.0): glass4.
+\end{itemize}
+
+
+\subsection{PCA Explained Variance}
+\label{sec:setup:pca_variance}
+
+Since all three proposed algorithms project minority instances to a 2-D PCA subspace before generating synthetic samples (Section~\ref{sec:methods:framework}), the fraction of variance captured by the two principal components determines how faithfully the circular geometry in 2-D approximates the actual minority-class structure in the original feature space.
+
+\begin{table}[H]
+\centering
+\caption{Explained variance ratio of the first two principal components of the minority class per dataset.
+Low values indicate that the 2-D approximation captures a smaller fraction of the original geometry.}
+\label{tab:setup:pca_variance}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Dataset} & \textbf{Features} & \textbf{PC1} & \textbf{PC2} & \textbf{PC1+PC2} \\
+\midrule
+ecoli1       & 7  & 0.82 & 0.12 & 0.94 \\
+ecoli2       & 7  & 0.79 & 0.13 & 0.92 \\
+ecoli3       & 7  & 0.77 & 0.14 & 0.91 \\
+glass1       & 9  & 0.71 & 0.15 & 0.86 \\
+glass4       & 9  & 0.68 & 0.17 & 0.85 \\
+yeast1       & 8  & 0.76 & 0.14 & 0.90 \\
+yeast3       & 8  & 0.73 & 0.16 & 0.89 \\
+new-thyroid1 & 5  & 0.91 & 0.06 & 0.97 \\
+haberman     & 3  & 0.94 & 0.04 & 0.98 \\
+vehicle0     & 18 & 0.59 & 0.14 & 0.73 \\
+pima         & 8  & 0.78 & 0.13 & 0.91 \\
+wisconsin    & 9  & 0.84 & 0.09 & 0.93 \\
+heart        & 13 & 0.62 & 0.12 & 0.74 \\
+ionosphere   & 34 & 0.48 & 0.17 & 0.65 \\
+\midrule
+\textbf{Average} & & 0.74 & 0.13 & 0.87 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The 2-D PCA projection retains on average 87\% of the minority-class variance.
+For low-dimensional datasets (haberman 3 features, new-thyroid1 5 features), the projection captures 97--98\% of variance and the circular approximation is nearly exact.
+For high-dimensional datasets (ionosphere 34 features: 65\%, vehicle0 18 features: 73\%, heart 13 features: 74\%), the circular geometry is a rougher approximation; the inverse PCA transform produces hyper-ellipsoidal generation regions in the original space (Section~\ref{sec:methods:framework}).
+
+\textbf{Implication for native-dimension mode.}
+For ionosphere (35\% variance discarded by PCA) and vehicle0 (27\% discarded), the \texttt{use\_pca=False} native-dimension mode is particularly relevant: it performs all geometric operations in the full feature space without discarding minority-class variance.
+The ablation in Chapter~\ref{ch:ablation} suggests that native-dimension mode improves performance across the 14 evaluated datasets, with larger gains on higher-dimensional datasets.
+
+
+% ============================================================================
+\section{Classifiers}
+\label{sec:setup:classifiers}
+
+Seven classifiers are evaluated: \textbf{KNN} ($k=5$, Euclidean), \textbf{DT} (Gini, unbounded depth), \textbf{SVM-RBF} ($C=1.0$, $\gamma=\text{scale}$), \textbf{NB} (Gaussian), \textbf{MLP} (100 hidden units, ReLU, Adam optimizer~\cite{buda2018systematic}), \textbf{LR} ($L_2$, $C=1.0$), and \textbf{RF} (100 trees, Gini)~\cite{breiman2001random}.
+
+All classifiers are implemented using scikit-learn~\cite{pedregosa2011scikit} with default parameters unless otherwise stated.
+
+
+% ============================================================================
+\section{Evaluation Metrics}
+\label{sec:setup:metrics}
+
+Following established practice in the imbalanced learning literature~\cite{he2009learning, branco2016survey, fernandez2018learning}, we report the six metrics defined in Table~\ref{tab:bg:metrics}: F1-score, G-mean, AUC-ROC, Balanced Accuracy, Precision, and Sensitivity.
+
+F1-score, G-mean, and AUC are the primary metrics for method comparison, while balanced accuracy, precision, and sensitivity provide complementary perspectives.
+
+
+% ============================================================================
+\section{Validation Protocol}
+\label{sec:setup:validation}
+
+We use 5-fold stratified cross-validation following the oversampling-inside-folds protocol described in Section~\ref{sec:bg:clustering}:
+
+\begin{enumerate}[leftmargin=*]
+    \item The dataset is partitioned into 5 stratified folds.
+    \item For each fold:
+    \begin{enumerate}
+        \item Features are standardized (zero mean, unit variance) using training-fold statistics only.
+        \item Oversampling is applied to the training fold only.
+        \item The classifier is trained on the oversampled training data.
+        \item Performance is evaluated on the untouched test fold.
+    \end{enumerate}
+    \item Results are averaged across all 5 folds.
+\end{enumerate}
+
+To reduce variance in the estimates, the entire 5-fold procedure is repeated 3 times with different random seeds, for a total of 15 evaluations per dataset-method-classifier combination.
+The reported results are the mean across all 15 evaluations.
+
+
+% ============================================================================
+\section{Comparison Methods}
+\label{sec:setup:comparison}
+
+The proposed methods are compared against the following baselines:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{None}: No oversampling (original imbalanced data).
+    \item \textbf{Random Oversampling (ROS)}~\cite{batista2004study}: Duplicates random minority instances.
+    \item \textbf{SMOTE}~\cite{chawla2002smote}: Standard linear interpolation ($k=5$).
+    \item \textbf{Borderline-SMOTE}~\cite{han2005borderline}: Borderline-focused SMOTE (variant 1, $k=5$).
+    \item \textbf{ADASYN}~\cite{he2008adasyn}: Adaptive synthetic oversampling ($k=5$).
+    \item \textbf{SVM-SMOTE}~\cite{nguyen2011borderline}: SVM-based borderline oversampling ($k=5$).
+    \item \textbf{K-Means SMOTE}~\cite{douzas2018improving}: Clustering-based SMOTE (K determined by silhouette score).
+    \item \textbf{Circular-SMOTE}: Our baseline circular oversampler with uniform disk sampling (Section~\ref{sec:methods:framework}).
+\end{enumerate}
+
+Safe-Level SMOTE~\cite{bunkhumpornpat2009safe} was reviewed in Chapter~\ref{ch:literature} but excluded from the main comparison: the \texttt{imbalanced-learn} implementation raises an exception when the safe level equals zero for all minority instances in a fold, which occurs on 3 of the 14 benchmark datasets (glass4, new-thyroid1, ecoli3) due to extreme imbalance.
+
+Baselines 2--7 are implemented using the imbalanced-learn library~\cite{lemaitre2017imbalanced}.
+Circular-SMOTE and the proposed methods are implemented in a custom framework.
+
+
+% ============================================================================
+\section{Hyperparameter Settings}
+\label{sec:setup:hyperparams}
+
+Table~\ref{tab:setup:hyperparams} lists the default hyperparameter settings for the proposed methods.
+
+\begin{table}[H]
+\centering
+\caption{Default hyperparameters for the proposed methods.}
+\label{tab:setup:hyperparams}
+\begin{tabular}{llll}
+\toprule
+\textbf{Parameter} & \textbf{Symbol} & \textbf{Default} & \textbf{Used in} \\
+\midrule
+Number of clusters        & $K$               & 3    & All \\
+Seed neighbors           & $k_{\text{seed}}$  & 5    & All \\
+Local density neighbors  & $k_{\text{nn}}$   & 5    & GVM-CO, LS-CO \\
+Max concentration         & $\kappa_{\max}$   & 20   & GVM-CO, LS-CO \\
+Concentration exponent    & $\gamma$          & 2.0  & GVM-CO, LRE-CO \\
+Score blending            & $\alpha$          & 0.6  & GVM-CO, LRE-CO \\
+Certainty threshold       & $\tau$            & 0.80 & LRE-CO \\
+Clustering method         & --                & K-Means & All \\
+Denoise method            & --                & None & All \\
+\midrule
+\multicolumn{4}{l}{\textit{LS-CO Specific}} \\
+\midrule
+Number of layers          & $L$               & 10$^*$ & LS-CO \\
+Number of segments        & $M$               & 8    & LS-CO \\
+Layer decay               & $\beta$           & 1.0  & LS-CO \\
+Angular decay             & $\sigma_\theta$   & $\pi/4$ & LS-CO \\
+\midrule
+\multicolumn{4}{l}{\textit{Seed Selection}} \\
+\midrule
+Candidates                & $N_{\text{cand}}$  & 100  & -- \\
+PCA components            & $d_{\text{PCA}}$  & 2    & -- \\
+Clusters for seeds        & $K_s$             & 5    & -- \\
+Topological $k$           & $k_{\text{topo}}$ & 5    & -- \\
+Smoothness penalty        & $w_z$             & 0.5  & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For all methods, the sampling strategy achieves a 1:1 minority-to-majority ratio after oversampling.
+
+\noindent$^*$\textit{The main comparison uses $L=10$ as a balanced default.
+The ablation in Chapter~\ref{ch:ablation} shows that $L \geq 60$ achieves higher F1 and G-Mean while remaining under 1~s/fold; practitioners without strict runtime constraints should use $L=60$.}
+
+\medskip
+\noindent\textbf{Hyperparameter selection and optimistic bias.}
+The default hyperparameter values listed above (including $\tau=0.80$, $\kappa_{\max}=20$, $L=10$) were selected based on ablation experiments conducted on the same 14 benchmark datasets used for the main comparison.
+This constitutes a form of indirect leakage: the defaults are empirically best-performing values on the final evaluation benchmark.
+The expected optimistic bias has not been formally quantified via nested cross-validation; practitioners applying these defaults to new datasets should be aware that performance may differ.
+
+
+% ============================================================================
+\section{Statistical Testing Framework}
+\label{sec:setup:stats}
+
+To assess the statistical significance of performance differences, we follow the recommendations of Dem\v{s}ar~\cite{demsar2006statistical} and Garc\'{i}a and Herrera~\cite{garcia2008extension}:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Friedman test}: Tests the null hypothesis that all methods have equal average ranks across datasets ($\alpha = 0.05$).
+    \item \textbf{Holm's step-down correction}: Applied to pairwise comparisons when the Friedman test rejects the null.
+    \item \textbf{Nemenyi test}: Computes the critical difference for a CD diagram ($\alpha = 0.05$).
+\end{enumerate}
+
+All statistical tests are implemented using SciPy~\cite{pedregosa2011scikit} and scikit-posthocs.
+
+
+% ============================================================================
+\section{Implementation Details}
+\label{sec:setup:implementation}
+
+The entire experimental framework is implemented in Python 3.10.
+The core oversampling algorithms use NumPy for vectorised computation, scikit-learn for clustering, KNN, PCA, and classifiers, and imbalanced-learn for baseline methods.
+
+All experiments are run on a machine with an Intel i7-12700H processor and 32 GB RAM.
+No GPU acceleration is used.
+Random seeds are fixed for reproducibility: the global seed is set to 42, and cross-validation seeds are $\{42, 123, 456\}$ for the three repetitions.
+
+

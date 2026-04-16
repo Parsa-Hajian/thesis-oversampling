@@ -1,0 +1,81 @@
+% =============================================================================
+% Chapter 12 -- Causality Study: Motivation and Design
+% =============================================================================
+
+\chapter{Causality Study: Motivation and Design}
+\label{ch:causality_intro}
+
+Part~IV showed that circular oversampling improves minority-class classification, but all such work rests on an assumption that has never been directly tested: that class imbalance \emph{per se} causes the degradation.
+Most empirical studies compare oversamplers against each other on datasets that are already imbalanced at a fixed, unknown ratio and do not control for confounds: reduced minority sample size, distributional shift from naive removal, or classifier-family sensitivity.
+Part~V tests this causal assumption directly.
+A uniform random removal protocol drives the degradation phase; GVM-CO (Chapter~\ref{ch:proposed_methods}) is one of the recovery oversamplers evaluated.
+
+
+% ============================================================================
+\section{The Untested Assumption}
+\label{sec:causal:assumption}
+
+Machine learning practitioners routinely encounter a well-known heuristic: when a binary classifier performs poorly on the minority class, class imbalance is blamed.
+This assumption is so pervasive that entire research sub-fields have emerged around oversampling, undersampling, and cost-sensitive learning~\cite{he2009learning, fernandez2018learning}, all premised on the idea that an unequal class distribution \emph{causes} degraded classification performance.
+
+Yet the causal nature of this claim has rarely been tested with adequate rigour.
+Most empirical studies compare different oversampling techniques against one another, or against a no-oversampling baseline, but do so on datasets that are \emph{already} imbalanced at an unknown and fixed ratio~\cite{krawczyk2016learning, haixiang2017learning}.
+They do not isolate the effect of imbalance itself from the confounding effects listed above.
+
+As a result, while the literature documents \emph{that} classifiers struggle under imbalance, the question of \emph{why} --- and specifically whether the ratio itself or the accompanying information loss is the root cause --- remains underexplored.
+Japkowicz and Stephen~\cite{japkowicz2002class} raised this question early, noting that class imbalance interacts with class overlap in non-obvious ways, but a controlled causal study was not performed.
+
+This part of the thesis addresses the gap directly.
+We ask: \emph{Does progressively increasing class imbalance monotonically degrade classifier performance, and can oversampling reverse that degradation to recover the balanced baseline?}
+
+
+% ============================================================================
+\section{Study Design}
+\label{sec:causal:design}
+
+We design a controlled \emph{degradation-and-recovery} experiment on ten binary classification datasets that begin in a fully balanced state (imbalance ratio $\IR \approx 1$).
+The experiment proceeds in two phases.
+
+\textbf{Phase~1 --- Degradation sweep.}
+Starting from the balanced dataset, we remove minority-class instances one step at a time (1\% of the original minority per step) using a uniform random removal protocol (Section~\ref{sec:causal:random_removal}).
+We continue until 80\% of the minority class has been removed ($\IR \approx 4{:}1$).
+At each step we measure six classification metrics across five classifiers using leakage-safe five-fold cross-validation (Section~\ref{sec:setup:leakage}).
+
+\textbf{Phase~2 --- Recovery sweep.}
+Starting from the most-degraded state, we apply each of seven oversampling methods incrementally, adding back 1\% of minority samples per step until full balance is restored.
+We measure how rapidly each oversampler recovers the balanced baseline and whether full recovery is achievable.
+
+The uniform random removal strategy ensures that no distributional criterion biases the removal sequence: each minority instance is equally likely to be removed at each step.
+This provides the cleanest possible test of the imbalance hypothesis, isolating pure imbalance effects from any confound introduced by a structured removal policy.
+
+
+% ============================================================================
+\section{Uniform Random Removal Protocol}
+\label{sec:causal:random_removal}
+
+The key design choice of Phase~1 is the use of uniform random removal.
+At each degradation step, a minority instance $\vx^*$ is selected uniformly at random from the remaining set $\mathcal{X}_{\min}^{(t)}$.
+
+Random removal ensures that the degradation protocol introduces no distributional bias: each instance is equally likely to be removed, providing the cleanest possible test of the imbalance hypothesis.
+Unlike structured removal strategies that preferentially target specific regions of the feature space, uniform random removal avoids confounding the effect of reduced count with the effect of a particular removal policy.
+This ensures that at each degradation step, the performance drop is attributable to the reduced count (and thus increased $\IR$) and the accompanying information loss, rather than to a systematic bias in which instances were removed.
+
+
+% ============================================================================
+\section{Research Questions}
+\label{sec:causal:rqs}
+
+\begin{enumerate}[label=\textbf{RQ\arabic*.}, leftmargin=*, itemsep=4pt]
+  \item Does degradation monotonically decrease classification metrics, or is there a threshold imbalance ratio below which performance collapses~\cite{japkowicz2002class, weiss2003effect}?
+  \item Are some classifiers more robust to progressive imbalance than others~\cite{ling2004exploration, galar2012review}?
+  \item Can oversampling methods fully recover balanced-dataset performance~\cite{chawla2002smote, douzas2018improving}?
+  \item Do circular oversampling methods (GVM-CO) recover performance faster or to a higher ceiling than linear interpolation methods (SMOTE, B-SMOTE)?
+  \item Is the performance loss caused by imbalance \emph{per se}, or primarily by information loss from a smaller minority sample~\cite{weiss2003effect}?
+\end{enumerate}
+
+These five research questions directly connect to the broader thesis narrative.
+RQ1--RQ2 characterize the causal signature of imbalance, providing the empirical foundation that motivates Part~IV's oversampling work.
+RQ3--RQ4 evaluate whether Part~IV's methods (GVM-CO) succeed at the recovery task.
+RQ5 provides the final interpretive synthesis: even when imbalance is the confirmed cause of degradation, irreducible information loss limits the achievable recovery.
+
+

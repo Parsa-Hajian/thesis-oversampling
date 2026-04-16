@@ -1,0 +1,305 @@
+% =============================================================================
+% Integrated Doctoral Thesis
+%
+% Title:  From Distributional Similarity to Causal Imbalance:
+%         Circular Oversampling, Seed Selection, and a Controlled Degradation Study
+%
+% Author: Parsa Hajiannejad
+%         Università degli Studi di Milano
+% =============================================================================
+
+\documentclass[12pt, a4paper, twoside, openright]{book}
+
+% ---- Encoding & Language ---------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+
+% ---- Page Geometry ---------------------------------------------------------
+\usepackage[
+  top=3cm,
+  bottom=3cm,
+  inner=3.5cm,
+  outer=2.5cm,
+  headheight=15pt
+]{geometry}
+
+% ---- Fonts -----------------------------------------------------------------
+\usepackage{mathpazo}
+\usepackage{microtype}
+
+% ---- Mathematics -----------------------------------------------------------
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+
+% ---- Graphics & Floats -----------------------------------------------------
+\usepackage{graphicx}
+\graphicspath{
+  {../figures/circular_oversampling/}
+  {../figures/causality/}
+  {figures/}
+}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage[font=small, labelfont=bf]{caption}
+
+% ---- Tables ----------------------------------------------------------------
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{array}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% ---- Algorithms ------------------------------------------------------------
+\usepackage[ruled, vlined, linesnumbered]{algorithm2e}
+\SetKwInput{KwInput}{Input}
+\SetKwInput{KwOutput}{Output}
+\SetKwInput{KwParam}{Parameters}
+\SetAlFnt{\small}
+
+% ---- Code listings ---------------------------------------------------------
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  keywordstyle=\bfseries\color{blue!70!black},
+  commentstyle=\itshape\color{green!40!black},
+  stringstyle=\color{red!60!black},
+  numbers=left,
+  numberstyle=\tiny,
+  breaklines=true,
+  frame=single,
+  tabsize=4,
+}
+
+% ---- Colors ----------------------------------------------------------------
+\usepackage{xcolor}
+\definecolor{unimired}{RGB}{153,0,0}
+\definecolor{linkblue}{RGB}{0,50,130}
+
+% ---- Hyperlinks ------------------------------------------------------------
+\usepackage[
+  colorlinks=true,
+  linkcolor=linkblue,
+  citecolor=unimired,
+  urlcolor=linkblue,
+  bookmarks=true,
+  bookmarksnumbered=true
+]{hyperref}
+\usepackage{url}
+\pdfstringdefDisableCommands{%
+  \def\kappa{}%
+  \def\gamma{}%
+  \def\sigma{}%
+  \def\tau{}%
+  \def\alpha{}%
+  \def\mathrm#1{#1}%
+  \def\max{}%
+  \def\text#1{#1}%
+
+}
+
+% ---- Bibliography ----------------------------------------------------------
+\usepackage{csquotes}
+\usepackage[
+  backend=biber,
+  style=numeric-comp,
+  sorting=nyt,
+  maxnames=6,
+  minnames=3,
+  doi=false,
+  isbn=false,
+  url=false,
+  eprint=false
+]{biblatex}
+\addbibresource{references.bib}
+
+% ---- Header / Footer -------------------------------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\nouppercase{\leftmark}}
+\fancyhead[RO]{\nouppercase{\rightmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% ---- Theorem Environments --------------------------------------------------
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{remark}{Remark}[chapter]
+
+% ---- Spacing ---------------------------------------------------------------
+\usepackage{setspace}
+\onehalfspacing
+
+% ---- Miscellaneous ---------------------------------------------------------
+\usepackage{enumitem}
+\usepackage{xspace}
+\usepackage{pdfpages}
+\usepackage{appendix}
+\usepackage{pifont}
+\newcommand{\starmark}{\ding{72}}
+
+% ---- Part style (add "Part" label) -----------------------------------------
+\usepackage{titlesec}
+% Give parts a clear "Part X — Title" header
+\titleformat{\part}[display]
+  {\normalfont\huge\bfseries\centering}
+  {\partname\ \thepart}{20pt}{\Huge}
+
+% ---- Custom Commands -------------------------------------------------------
+\newcommand{\thesistitle}{%
+  From Distributional Similarity to Causal Imbalance:
+  Circular Oversampling, Seed Selection, and a Controlled Degradation Study}
+\newcommand{\authorname}{Parsa Hajiannejad}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\IR}{\mathrm{IR}}
+\newcommand{\TV}{\operatorname{TV}}
+\newcommand{\OVL}{\operatorname{OVL}}
+%%% \newcommand{\NHOP}{\operatorname{NHOP}}  % REMOVED — NHOP no longer in thesis
+\newcommand{\HI}{\operatorname{HI}}
+\newcommand{\BC}{\operatorname{BC}}
+\newcommand{\KL}{\operatorname{KL}}
+\newcommand{\JS}{\operatorname{JS}}
+%%% \newcommand{\nhop}{NHOP\xspace}  % REMOVED
+\newcommand{\vx}{\bm{x}}
+\newcommand{\vy}{\bm{y}}
+\newcommand{\vz}{\bm{z}}
+\newcommand{\vc}{\bm{c}}
+\newcommand{\vmu}{\bm{\mu}}
+\newcommand{\vg}{\bm{g}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% ============================================================================
+%  DOCUMENT
+% ============================================================================
+\begin{document}
+
+% ---- Front Matter ----------------------------------------------------------
+\frontmatter
+\pagenumbering{roman}
+
+% Title page
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+{\Large Università degli Studi di Milano\\
+Laurea Magistrale in Computer Science\par}
+\vspace{3cm}
+{\huge\bfseries \thesistitle\par}
+\vspace{2cm}
+{\Large\itshape \authorname\par}
+\vfill
+{\large Academic Year 2024--2025\par}
+\end{titlepage}
+\cleardoublepage
+
+% ---- Abstract --------------------------------------------------------------
+\input{chapters/00_abstract}
+\cleardoublepage
+
+% ---- Table of Contents -----------------------------------------------------
+\tableofcontents
+\cleardoublepage
+
+\listoffigures
+\cleardoublepage
+
+\listoftables
+\cleardoublepage
+
+% ---- Main Matter -----------------------------------------------------------
+\mainmatter
+\pagenumbering{arabic}
+
+% ============================================================================
+\part{Foundations}
+\label{part:foundations}
+% ============================================================================
+
+\input{chapters/part1_foundations/01_introduction}
+
+\input{chapters/part1_foundations/02_background}
+
+\input{chapters/part1_foundations/03_literature_review}
+
+% ============================================================================
+\part{Geometry-Preserving Seed Selection}
+\label{part:seed_selection}
+% ============================================================================
+
+\input{chapters/part3_seed_selection/06_seed_selection}
+
+% ============================================================================
+\part{Circular Oversampling Methods}
+\label{part:circular_oversampling}
+% ============================================================================
+
+\input{chapters/part4_circular_oversampling/07_proposed_methods}
+
+\input{chapters/part4_circular_oversampling/08_experimental_setup}
+
+\input{chapters/part4_circular_oversampling/09_results}
+
+\input{chapters/part4_circular_oversampling/10_statistical}
+
+\input{chapters/part4_circular_oversampling/11_ablation}
+
+% ============================================================================
+\part{Is Class Imbalance the True Cause of Poor Performance?}
+\label{part:causality}
+% ============================================================================
+
+\input{chapters/part5_causality/12_causality_intro}
+
+\input{chapters/part5_causality/13_causality_setup}
+
+\input{chapters/part5_causality/14_degradation}
+
+\input{chapters/part5_causality/15_recovery}
+
+\input{chapters/part5_causality/16_discussion}
+
+% ============================================================================
+\part{Synthesis and Conclusion}
+\label{part:conclusion}
+% ============================================================================
+
+\input{chapters/part6_conclusion/17_conclusion}
+
+% ---- Data Availability Statement --------------------------------------------
+\cleardoublepage
+\chapter*{Data Availability Statement}
+\addcontentsline{toc}{chapter}{Data Availability Statement}
+
+The datasets analyzed in Part~IV (Chapter~\ref{ch:experimental_setup}) are
+publicly available from the KEEL Data-Mining Repository~\cite{alcala2011keel}
+and the UCI Machine Learning Repository~\cite{uci2017}.
+Synthetic dataset analogues used in Part~V
+(Chapter~\ref{ch:causality_setup}) were generated using
+\texttt{sklearn.datasets.make\_classification} with parameters reported in
+Table~\ref{tab:causal:datasets} and are fully reproducible from the random
+seed \texttt{random\_state = 42}.
+The experimental code implementing all algorithms and the
+degradation-and-recovery protocol is available from the corresponding author
+upon reasonable request.
+
+% ---- Bibliography ----------------------------------------------------------
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliography}
+\printbibliography[title={Bibliography}]
+
+\end{document}

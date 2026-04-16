@@ -1,0 +1,199 @@
+% =============================================================================
+% Chapter 3 -- Literature Review
+% =============================================================================
+
+\chapter{Literature Review}
+\label{ch:literature}
+
+This chapter surveys the body of research on oversampling methods for imbalanced classification.
+We organize the review into four categories: SMOTE variants, clustering-based oversampling methods, distribution-aware approaches, and seed/sample selection strategies.
+We conclude with a summary of the research gap that motivates the work presented in this thesis.
+
+
+% ============================================================================
+\section{SMOTE Variants}
+\label{sec:lit:smote_variants}
+
+Since its introduction in 2002~\cite{chawla2002smote}, SMOTE has inspired a large family of variants that address its limitations by modifying (1) which instances are used as seeds, (2) which neighbors are selected for interpolation, or (3) how the interpolation is performed.
+
+\subsection{Borderline-SMOTE}
+\label{sec:lit:borderline}
+
+Han et al.~\cite{han2005borderline} observed that synthetic samples are most useful near the decision boundary.
+Borderline-SMOTE identifies minority instances in the borderline region (those whose $m$ nearest neighbors include a majority of majority-class points) and generates synthetic samples only from these ``danger-zone'' instances.
+Two variants are proposed:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Borderline-SMOTE1:} Generates from danger-zone minority instances using minority-class $k$-NN for interpolation.
+  \item \textbf{Borderline-SMOTE2:} Also uses majority-class neighbors, placing synthetic samples closer to the boundary.
+\end{itemize}
+However, the method inherits SMOTE's linear interpolation limitation and can amplify class overlap when the boundary is complex.
+
+\subsection{Safe-Level SMOTE}
+\label{sec:lit:safelevel}
+
+Bunkhumpornpat et al.~\cite{bunkhumpornpat2009safe} introduced the concept of a ``safe level'' for each minority instance:
+\begin{equation}
+  \text{safe\_level}(\vx_i) = \frac{|\{j : y_j = y_{\min},\; \vx_j \in \text{KNN}(\vx_i)\}|}{k}.
+\end{equation}
+Synthetic samples are generated closer to the safer endpoint, ensuring placement in minority-dominated regions.
+
+\subsection{ADASYN}
+\label{sec:lit:adasyn}
+
+The Adaptive Synthetic sampling approach (ADASYN) by He et al.~\cite{he2008adasyn} generates more samples from harder-to-classify minority instances, with the number of synthetic samples proportional to the local majority density:
+\begin{equation}
+  \hat{r}_i = \frac{|\{j : y_j \neq y_{\min},\; \vx_j \in \text{KNN}(\vx_i)\}|}{k}.
+\end{equation}
+This focuses oversampling on challenging instances but can generate from noisy seeds.
+
+\subsection{SVM-SMOTE}
+
+Nguyen et al.~\cite{nguyen2011borderline} proposed SVM-SMOTE, which uses a trained SVM to identify minority support vectors as seeds, offering a margin-based criterion for borderline instance selection.
+
+\subsection{Other Notable Variants}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{SMOTE-IPF}~\cite{saez2015smote}: Applies ensemble-based noise filtering after SMOTE.
+  \item \textbf{LN-SMOTE}~\cite{maciejewski2011local}: Uses local neighbourhood information to adjust the interpolation range.
+  \item \textbf{MWMOTE}~\cite{barua2014mwmote}: Uses weighted minority instances and cluster-based generation.
+  \item \textbf{LoRAS}~\cite{bej2021loras}: Uses manifold-based oversampling.
+\end{itemize}
+
+
+% ============================================================================
+\section{Clustering-Based Oversampling}
+\label{sec:lit:clustering}
+
+Clustering captures the internal structure of the minority class, enabling more targeted synthetic sample generation.
+
+\subsection{K-Means SMOTE}
+\label{sec:lit:kmeans_smote}
+
+Douzas et al.~\cite{douzas2018improving} proposed K-Means SMOTE:
+\begin{enumerate}
+  \item Apply K-means to the full dataset.
+  \item Identify clusters with a high proportion of minority instances.
+  \item Apply SMOTE within each selected cluster proportionally to cluster minority density.
+\end{enumerate}
+By restricting SMOTE to minority-enriched clusters, K-Means SMOTE avoids generating in majority-dominated regions, reducing class overlap.
+
+\subsection{Geometric SMOTE}
+\label{sec:lit:geometric_smote}
+
+Douzas and Bacao~\cite{douzas2019geometric} proposed Geometric SMOTE, which replaces SMOTE's linear interpolation with sampling from a geometric region (hyper-sphere or truncated hyper-sphere) defined by a minority instance and a reference point.
+Geometric SMOTE is the most directly comparable prior work to the circular oversampling framework proposed in this thesis: both replace linear generation with geometric region sampling.
+The key distinctions are: (1)~Geometric SMOTE operates in the original $d$-dimensional feature space using a single hyper-sphere per point pair, whereas the proposed methods operate in a 2-D PCA projection enabling circular geometry and Von Mises directional biasing; (2)~the proposed LRE-CO adds an explicit certainty threshold and Voronoi-constrained local generation, providing stronger boundary guarantees.
+
+\textbf{Known limitation:} A direct experimental comparison with Geometric SMOTE is absent from this thesis.
+All performance claims are therefore restricted to the baselines evaluated in Chapter~\ref{ch:experimental_setup}, and no claim of superiority over Geometric SMOTE is made.
+
+Several additional clustering-based variants have been proposed: CBR~\cite{jo2004class} oversamples separately within each cluster; HCC Cluster-SMOTE~\cite{arefin2020hcc} uses a minority-class dendrogram and applies SMOTE within each sub-tree; KNSMOTE~\cite{li2024knsmote} adds neighbourhood-based filtering for dual-level noise control; and EC-EBO~\cite{xia2023ecebo} combines ensemble clustering with evolutionary optimization at significantly higher computational cost.
+
+
+% ============================================================================
+\section{Distribution-Aware Oversampling}
+\label{sec:lit:distribution}
+
+Distribution-aware methods model the minority-class distribution explicitly and sample from the estimated model.
+
+\subsection{Kernel Density Estimation (KDE) Approaches}
+
+KDE-based oversampling fits a kernel density estimate to the minority class and samples from it~\cite{guo2008kde}.
+This produces samples following the estimated distribution rather than being confined to line segments.
+However, KDE suffers from the curse of dimensionality: bandwidth estimation becomes unreliable in high dimensions.
+
+\subsection{GAN-Based Oversampling}
+
+Generative Adversarial Networks have been applied through GAMO~\cite{mullick2019generative}, BAGAN~\cite{mariani2018bagan}, and cGAN-based approaches~\cite{douzas2018effective}.
+While promising, GAN-based oversampling faces significant practical limitations: training instability, mode collapse, high computational cost, and unreliable class boundary respect with small datasets~\cite{sharma2022survey}.
+
+\subsection{DBSMOTE}
+
+Bunkhumpornpat et al.~\cite{bunkhumpornpat2012dbsmote} use DBSCAN to identify core minority regions, generating by interpolation toward cluster pseudo-centroids rather than potentially noisy boundary points.
+
+
+% ============================================================================
+\section{Seed and Sample Selection Strategies}
+\label{sec:lit:seed_selection}
+
+The quality of oversampled data depends critically on which minority instances serve as seeds.
+
+\subsection{Noise Filtering}
+
+Pre-filtering noisy instances before oversampling includes:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{ENN-based filtering:} Remove minority instances whose neighbors are predominantly majority~\cite{batista2004study}.
+  \item \textbf{Ensemble-based filtering:} Remove consistently misclassified minority instances~\cite{saez2015smote}.
+  \item \textbf{Tomek link removal:} Remove minority instances forming Tomek links with majority instances~\cite{tomek1976two}.
+\end{itemize}
+
+\subsection{Instance Weighting}
+
+ADASYN~\cite{he2008adasyn} assigns higher weights to harder instances.
+MWMOTE~\cite{barua2014mwmote} uses a sophisticated weighting considering both difficulty and informativeness.
+
+\subsection{Geometric Selection}
+
+The geometry-preserving seed selection presented in Chapter~\ref{ch:seed_selection} differs from prior approaches by optimizing a composite criterion ($\BC + \mathrm{AGTP} - w_j \cdot \mathrm{JSD} - w_z \cdot Z$) that jointly accounts for distributional fidelity, structural preservation, and spatial regularity.
+
+
+% ============================================================================
+\section{Geometric and Non-Linear Oversampling}
+\label{sec:lit:geometric}
+
+\subsection{Radial-Based Oversampling (RBO)}
+
+Koziarski and Wo{\'z}niak~\cite{koziarski2020radial} generate using radial basis functions centered at minority instances, producing smooth density-dependent oversampling that avoids nearest-neighbor discontinuities.
+
+\subsection{Manifold-Based Oversampling (LoRAS)}
+
+LoRAS~\cite{bej2021loras} generates on locally-estimated affine subspaces, respecting local data geometry but requiring unreliable local dimensionality estimation with small samples.
+
+
+% ============================================================================
+\section{Research Gap and Positioning}
+\label{sec:lit:gap}
+
+Despite the extensive literature, four gaps remain:
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{Linear interpolation dominance.} Most SMOTE variants retain line-segment generation.
+  Only a few methods (LoRAS, RBO) explore higher-dimensional geometries, and none combine circular generation with directional bias.
+  \item \textbf{Lack of directional control.} Methods generating in two or more dimensions use uniform or Gaussian sampling without directional control.
+  The Von Mises distribution has not been applied to oversampling.
+  \item \textbf{Limited local analysis.} While clustering-based methods partition globally, few perform fine-grained local analysis inside each generation region.
+  \item \textbf{Seed selection is under-explored.} Most methods use all minority instances or apply simple filtering.
+  A composite geometry-preserving criterion is absent from the literature.
+\end{enumerate}
+
+Table~\ref{tab:lit:positioning} summarises the positioning of our methods.
+
+\begin{table}[ht]
+\centering
+\caption{Positioning of the proposed methods relative to existing oversampling approaches.}
+\label{tab:lit:positioning}
+\small
+\begin{tabularx}{\textwidth}{l>{\centering\arraybackslash}X>{\centering\arraybackslash}X>{\centering\arraybackslash}X>{\centering\arraybackslash}X}
+\toprule
+\textbf{Method} & \textbf{Generation Geometry} & \textbf{Directional Bias} & \textbf{Local Analysis} & \textbf{Seed Selection} \\
+\midrule
+SMOTE~\cite{chawla2002smote} & Line segment & No & No & All/random \\
+Borderline-SMOTE~\cite{han2005borderline} & Line segment & No & No & Borderline \\
+ADASYN~\cite{he2008adasyn} & Line segment & No & No & Adaptive \\
+SVM-SMOTE~\cite{nguyen2011borderline} & Line segment & No & No & SVM-based \\
+K-Means SMOTE~\cite{douzas2018improving} & Line segment & No & Cluster-level & All \\
+LoRAS~\cite{bej2021loras} & Affine subspace & No & Local manifold & All \\
+RBO~\cite{koziarski2020radial} & Radial basis & No & Density-based & All \\
+\midrule
+\textbf{GVM-CO (Alg.~1)} & Circle/disk & Von Mises & Cluster gravity & Geometry-preserving \\
+\textbf{LRE-CO (Alg.~2)} & Circle/disk & No (uniform) & Voronoi sub-regions & Geometry-preserving \\
+\textbf{LS-CO (Alg.~3)} & Circle/disk & Segmental & Layered rings & Geometry-preserving \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Our methods are the first to combine circle-based generation geometry with directional/structural control mechanisms and a geometry-preserving seed selection strategy.
+
+\medskip
+
+\noindent\textbf{Bridge to Part~II.}
+For the seed selection criterion, we adopt the Bhattacharyya Coefficient~\cite{bhattacharyya1943measure}, a well-established marginal distributional similarity measure (Section~\ref{sec:bg:distrib_similarity}), as the primary seed quality metric in Part~II.

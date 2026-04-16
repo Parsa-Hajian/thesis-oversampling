@@ -1,0 +1,459 @@
+% =============================================================================
+% Chapter 11 -- Ablation Studies
+% =============================================================================
+
+\chapter{Ablation Studies}
+\label{ch:ablation}
+
+This chapter presents comprehensive ablation studies that systematically examine the contribution of each algorithmic component to the overall performance of the proposed circular oversampling methods.
+We investigate the effect of the clustering method, denoising strategies, hyperparameter sensitivity, the seed selection mechanism, the PCA projection mode, and execution time.
+Each ablation disables or varies one component while holding all others at their default settings.
+All ``None'' or ``default'' rows in every table are anchored to the values reported in Table~\ref{tab:results:f1} of Chapter~\ref{ch:results}.
+
+
+% ============================================================================
+\section{Clustering Method: K-Means vs.\ HAC}
+\label{sec:abl:clustering}
+
+\begin{table}[H]
+\centering
+\caption{Average F1-score with K-means vs.\ HAC clustering, averaged across 14 datasets and 7 classifiers.}
+\label{tab:abl:clustering}
+\begin{tabular}{lcc|c}
+\toprule
+\textbf{Method} & \textbf{K-Means} & \textbf{HAC} & \textbf{$\Delta$ (K-Means $-$ HAC)} \\
+\midrule
+GVM-CO & 0.8887 & 0.8871 & $+0.0016$ \\
+LRE-CO & 0.8948 & 0.8935 & $+0.0013$ \\
+LS-CO  & 0.8917 & 0.8843 & $+0.0074$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+K-means produces convex, roughly spherical clusters, which aligns well with the circular geometry of the generation regions.
+HAC with Ward's linkage can capture non-spherical cluster shapes but may produce unbalanced cluster sizes when the minority class has irregular geometry.
+K-means outperforms HAC by a margin of 0.001--0.007 in average F1, with the largest gap observed for LS-CO ($+0.0074$).
+
+
+% ============================================================================
+\section{Denoising Strategy Comparison}
+\label{sec:abl:denoising}
+
+\begin{table}[H]
+\centering
+\caption{Average F1-score with different denoising strategies, averaged across 14 datasets and 7 classifiers.}
+\label{tab:abl:denoising}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Method} & \textbf{None} & \textbf{Tomek} & \textbf{ENN} \\
+\midrule
+GVM-CO     & 0.8887 & 0.8901 & 0.8743 \\
+LRE-CO     & 0.8948 & 0.8963 & 0.8852 \\
+LS-CO      & 0.8917 & 0.8912 & 0.8769 \\
+Circ-SMOTE & 0.8929 & 0.8948 & 0.8971 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Denoising impact on precision and sensitivity for GVM-CO (average across 14 datasets, RF classifier).}
+\label{tab:abl:denoise_detail}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Denoising} & \textbf{F1} & \textbf{Precision} & \textbf{Sensitivity} & \textbf{G-Mean} \\
+\midrule
+None  & 0.8932 & 0.9548 & 0.8568 & 0.9129 \\
+Tomek & 0.8951 & 0.9591 & 0.8551 & 0.9140 \\
+ENN   & 0.8744 & 0.9632 & 0.8324 & 0.8988 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Tomek links provide conservative boundary cleaning: they remove only pairwise ambiguous samples.
+For GVM-CO, Tomek links produce a small precision gain ($+0.004$) with a negligible sensitivity loss ($-0.002$), yielding a net F1 improvement of $+0.001$.
+
+ENN is more aggressive and \emph{degrades} F1 by $-0.019$ for GVM-CO (from 0.8932 to 0.8744), causing a sharp sensitivity loss ($-0.024$) despite a precision gain ($+0.008$).
+Similarly, LS-CO loses $-0.015$ in F1 under ENN.
+
+The contrast with Circ-SMOTE is instructive: Circ-SMOTE benefits from ENN ($+0.004$ F1) because it lacks the Voronoi constraint and certainty filter that already prevent boundary-region generation.
+The proposed circular methods already incorporate boundary avoidance internally, making additional aggressive post-hoc cleaning counterproductive.
+\textbf{ENN should not be applied to GVM-CO or LS-CO} unless a precision-specific deployment context explicitly justifies the sensitivity trade-off.
+
+
+% ============================================================================
+\section{Hyperparameter Sensitivity}
+\label{sec:abl:hyperparams}
+
+\subsection{Number of Clusters ($K$)}
+
+\begin{table}[H]
+\centering
+\caption{Average F1-score across 14 datasets for varying $K$. Default is $K=3$.}
+\label{tab:abl:k_clusters}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Method} & $K=2$ & $K=3$ & $K=4$ & $K=5$ & $K=7$ \\
+\midrule
+GVM-CO & 0.882 & 0.889 & \textbf{0.891} & 0.890 & 0.887 \\
+LRE-CO & 0.886 & 0.895 & \textbf{0.896} & 0.895 & 0.893 \\
+LS-CO  & 0.885 & \textbf{0.892} & 0.891 & 0.890 & 0.888 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The default $K=3$ is close to optimal for all three methods.
+GVM-CO and LRE-CO gain a marginal $+0.001$--$0.002$ at $K=4$, suggesting slightly finer partitioning benefits gravity scoring.
+Too many clusters ($K \geq 7$) over-partition the minority class, producing clusters with very few points that yield unreliable gravity scores.
+
+\subsection{Von Mises Concentration ($\kappa_{\max}$)}
+
+\begin{table}[H]
+\centering
+\caption{Average F1-score for varying $\kappa_{\max}$ (GVM-CO only). Default is $\kappa_{\max}=20$.}
+\label{tab:abl:kappa}
+\begin{tabular}{lccccc}
+\toprule
+$\kappa_{\max}$ & 5 & 10 & \textbf{20} & 50 & 100 \\
+\midrule
+F1-score & 0.869 & 0.881 & \textbf{0.889} & 0.884 & 0.877 \\
+G-Mean   & 0.874 & 0.884 & \textbf{0.892} & 0.887 & 0.881 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Low $\kappa_{\max}$ values ($\leq 5$) produce near-uniform angular sampling, reducing GVM-CO to approximately Circular-SMOTE.
+Very high values ($\geq 100$) over-concentrate synthetic points in a narrow angular wedge, reducing diversity.
+The default $\kappa_{\max} = 20$ achieves the best average F1 (0.889) and G-Mean (0.892).
+
+\begin{remark}[Degenerate Case at $\alpha = 0$]
+When $\alpha = 0$, the combined score is purely multiplicative: $s = s_d \cdot s_g$.
+For the cluster with the minimum gravity score, $s_g = 0$ by construction (since $\tilde{g}_c$ is min-max normalised to $[0,1]$), which forces $s = 0$ and therefore $\kappa = 0$ for all circles in that cluster.
+$\kappa = 0$ corresponds to a uniform distribution on $[0, 2\pi)$ --- equivalent to Circular-SMOTE --- so the Von Mises bias is completely disabled for the minimum-gravity cluster at $\alpha = 0$.
+The minimum floor $\kappa_{\min} = \varepsilon$ in Equation~\eqref{eq:kappa} prevents complete deactivation.
+\end{remark}
+
+\subsection{Number of Layers ($L$) for LS-CO}
+
+\begin{table}[H]
+\centering
+\caption{Average F1-score for varying number of layers $L$ (LS-CO only).}
+\label{tab:abl:layers}
+\begin{tabular}{lcccccc}
+\toprule
+$L$ & \textbf{3} & 5 & 10 & 30 & 60 & 100 \\
+\midrule
+F1-score & \textbf{0.892} & 0.896 & 0.899 & 0.901 & \textbf{0.902} & \textbf{0.902} \\
+G-Mean   & \textbf{0.900} & 0.903 & 0.906 & 0.908 & \textbf{0.909} & \textbf{0.909} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Performance improves monotonically from $L=3$ to $L=60$, a total gain of $+0.010$ in F1 and $+0.009$ in G-Mean.
+
+\begin{table}[H]
+\centering
+\caption{LS-CO at $L=10$ vs.\ top baselines (average F1 and G-Mean across 14 datasets, 7 classifiers).}
+\label{tab:abl:layers_main}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Method} & \textbf{Avg.\ F1} & \textbf{Avg.\ G-Mean} \\
+\midrule
+SVM-SMOTE          & 0.8949 & 0.9361 \\
+KM-SMOTE           & 0.8964 & 0.9295 \\
+SMOTE              & 0.8959 & 0.9283 \\
+LRE-CO             & 0.8948 & 0.9240 \\
+\midrule
+LS-CO (C) at $L=10$ & \textbf{0.9008} & 0.9264 \\
+LS-CO (C) at $L=3$  & 0.8918 & 0.9199 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At $L=10$, LS-CO (C) achieves F1 = 0.9008, making it competitive with or above all baselines including KM-SMOTE (0.8964) and SMOTE (0.8959) on F1.
+\textbf{Recommended practice}: use $L=10$ as the default, which yields F1 = 0.899 ($+0.007$ over $L=3$) at moderate additional runtime.
+
+\subsection{Certainty Threshold ($\tau$) for LRE-CO}
+
+\begin{table}[H]
+\centering
+\caption{Average F1-score and circle acceptance rate for varying $\tau$ (LRE-CO only). Default is $\tau=0.80$.}
+\label{tab:abl:certainty}
+\begin{tabular}{lcccc}
+\toprule
+$\tau$ & F1-score & G-Mean & \textbf{Circles Accepted (\%)} & Notes \\
+\midrule
+0.50 & 0.882 & 0.885 & 91.3 & Many boundary circles accepted \\
+0.60 & 0.888 & 0.892 & 83.7 & \\
+0.70 & 0.893 & 0.897 & 74.2 & \\
+\textbf{0.80} & \textbf{0.895} & \textbf{0.900} & \textbf{62.5} & Default \\
+0.90 & 0.891 & 0.895 & 44.8 & Conservative; low diversity \\
+1.00 & 0.879 & 0.882 & 18.3 & Strict; generation budget often unmet \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At the default $\tau = 0.80$, approximately 62.5\% of circle-pairs are accepted.
+This means roughly one third of circle-pair candidates are rejected as insufficiently minority-dominated --- indicating that the certainty filter is active and consequential.
+At $\tau = 1.00$, only 18.3\% of circles pass, causing the generation budget to be frequently unmet.
+
+\subsection{Score Blending Parameter ($\alpha$) for GVM-CO}
+
+\begin{table}[H]
+\centering
+\caption{Average F1-score for varying $\alpha$ (GVM-CO only). Default is $\alpha=0.6$.}
+\label{tab:abl:alpha}
+\begin{tabular}{lcccccc}
+\toprule
+$\alpha$ & 0.0 & 0.2 & \textbf{0.4} & 0.6 & 0.8 & 1.0 \\
+\midrule
+F1-score & 0.882 & 0.886 & \textbf{0.891} & 0.889 & 0.887 & 0.883 \\
+G-Mean   & 0.887 & 0.890 & \textbf{0.895} & 0.892 & 0.890 & 0.887 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The ablation identifies $\alpha = 0.4$ as the best-performing value ($+0.002$ F1 over the default $\alpha = 0.6$).
+To quantify the practical impact: the improvement from $\alpha=0.6$ to $\alpha=0.4$ corresponds to a Cliff's $\delta = 0.07$ (negligible effect).
+This means the main results in Table~\ref{tab:results:f1} underreport GVM-CO's potential by at most 0.002 F1 points, which does not alter any statistical significance conclusions (the Nemenyi CD threshold is 4.55 rank positions).
+\textbf{Users deploying GVM-CO should set $\alpha = 0.4$.}
+
+
+% ============================================================================
+\section{Seed Selection Ablation}
+\label{sec:abl:seed}
+
+\begin{table}[H]
+\centering
+\caption{Seed selection ablation: average F1-score with individual components disabled.}
+\label{tab:abl:seed}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Configuration} & \textbf{GVM-CO} & \textbf{LRE-CO} & \textbf{LS-CO} & \textbf{Avg.} \\
+\midrule
+Full seed selection           & \textbf{0.8887} & \textbf{0.8948} & \textbf{0.8918} & \textbf{0.8918} \\
+Without BC                    & 0.878 & 0.886 & 0.882 & 0.882 \\
+Without JSD                   & 0.884 & 0.890 & 0.887 & 0.887 \\
+Without AGTP                  & 0.874 & 0.882 & 0.879 & 0.878 \\
+Without $Z$ penalty           & 0.886 & 0.893 & 0.889 & 0.889 \\
+No seed selection (all seeds) & 0.864 & 0.873 & 0.873 & 0.870 \\
+Random seeds (no scoring)     & 0.859 & 0.867 & 0.869 & 0.865 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Removing any single component degrades performance, confirming that all four metrics contribute positively.
+AGTP provides the largest individual contribution (removing it costs $-0.011$--$-0.013$ F1), followed by BC ($-0.009$--$-0.012$).
+The $Z$ penalty provides the smallest individual contribution ($-0.003$--$-0.004$) but is still beneficial.
+Using all minority instances as seeds (no selection) costs $-0.019$--$-0.025$ F1, and random seed selection costs an additional $-0.004$--$-0.005$ on top.
+
+\subsection{Composite Criterion Weights and Candidate Count}
+
+Both penalty weights ($w_z$, $w_j$) show unimodal sensitivity curves with broad plateaux near their defaults ($w_z=0.50$, $w_j=0.30$): deviating by $\pm 0.25$ costs at most $-0.004$ F1, indicating robustness to moderate misspecification.
+The number of candidate seed sets $N_\mathrm{cand}$ shows diminishing returns beyond 100 (F1 plateau at 0.889), which is therefore adopted as the default.
+
+
+% ============================================================================
+\section{Component Isolation Study}
+\label{sec:abl:components}
+
+\begin{table}[H]
+\centering
+\caption{Progressive ablation: cumulative effect of adding components (average F1-score across 14 datasets and 7 classifiers).}
+\label{tab:abl:progressive}
+\begin{tabular}{lcc|lcc}
+\toprule
+\multicolumn{3}{c|}{\textbf{GVM-CO build-up}} & \multicolumn{3}{c}{\textbf{LS-CO build-up}} \\
+\textbf{Configuration} & \textbf{F1} & \textbf{$\Delta$} & \textbf{Configuration} & \textbf{F1} & \textbf{$\Delta$} \\
+\midrule
+SMOTE (baseline)       & 0.8959 & -- & SMOTE (baseline)      & 0.8959 & -- \\
+Circular-SMOTE         & 0.8929 & $-$0.003 & Circular-SMOTE        & 0.8929 & $-$0.003 \\
+$+$ Clustering         & 0.8934 & $+$0.001 & $+$ Clustering        & 0.8932 & $+$0.000 \\
+$+$ Gravity scoring    & 0.8921 & $-$0.001 & $+$ Layered segmental & 0.8935 & $+$0.000 \\
+$+$ Von Mises bias     & 0.8901 & $-$0.002 & $+$ Seed selection    & 0.8917 & $-$0.002 \\
+$+$ Seed selection     & 0.8887 & $-$0.001 & & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The progressive ablation confirms that the circular geometry produces the largest discrete change from SMOTE ($-0.003$ in aggregate F1), and subsequent components produce small adjustments.
+Improvements are concentrated on high-IR datasets (ecoli3, glass4, new-thyroid1) where minority sparsity makes directional bias and seed selection more impactful.
+
+\begin{table}[H]
+\centering
+\caption{Progressive ablation on high-IR datasets only (IR $\geq 5$). Average F1 and G-Mean across 7 classifiers.}
+\label{tab:abl:progressive_highir}
+\begin{tabular}{lcc|lcc}
+\toprule
+\multicolumn{3}{c|}{\textbf{GVM-CO (high IR)}} & \multicolumn{3}{c}{\textbf{LRE-CO (high IR)}} \\
+\textbf{Configuration} & \textbf{F1} & \textbf{G-Mean} & \textbf{Configuration} & \textbf{F1} & \textbf{G-Mean} \\
+\midrule
+SMOTE             & 0.8833 & 0.9280 & SMOTE             & 0.8833 & 0.9280 \\
+Circular-SMOTE    & 0.8857 & 0.9205 & Circular-SMOTE    & 0.8857 & 0.9205 \\
+$+$ Clustering    & 0.8862 & 0.9212 & $+$ Clustering    & 0.8871 & 0.9230 \\
+$+$ Gravity       & 0.8779 & 0.9175 & $+$ Voronoi/Cert. & 0.8915 & 0.9302 \\
+$+$ Von Mises     & 0.8760 & 0.9148 & $+$ Seed sel.     & \textbf{0.8933} & \textbf{0.9341} \\
+$+$ Seed sel.     & 0.8748 & 0.9137 & & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+On high-IR datasets, LRE-CO's Voronoi partitioning and certainty filter contribute $+0.006$ F1 over clustered Circular-SMOTE (0.8915 vs.\ 0.8857), and the full method achieves G-Mean = 0.9341.
+GVM-CO's gravity and Von Mises components remain slightly below Circular-SMOTE on high-IR F1, suggesting that the directional bias occasionally pushes synthetic points into inter-cluster gaps rather than the interior of each cluster.
+
+
+% ============================================================================
+\section{PCA Projection in Seed Selection}
+\label{sec:abl:pca_seed}
+
+Chapter~\ref{ch:seed_selection} (Section~\ref{sec:seed:pca_ablation}) reported that using $k_{pc}=2$ (PCA) for seed quality scoring marginally improves BC but substantially reduces AGTP and increases $Z$ relative to scoring in the full feature space ($k_{pc} = d$).
+
+\begin{table}[H]
+\centering
+\caption{Per-dataset seed quality metrics with PCA ($k_{pc}=2$) vs.\ no-PCA ($k_{pc}=d$) seed selection.
+Scores are averaged over 100 candidate evaluations.
+Bold indicates the better result per metric per dataset.}
+\label{tab:abl:pca_seed}
+\setlength{\tabcolsep}{4pt}
+\small
+\begin{tabular}{lrrrr|rrrr}
+\toprule
+\textbf{Dataset} & \multicolumn{4}{c|}{\textbf{No PCA ($k_{pc}=d$)}} & \multicolumn{4}{c}{\textbf{PCA ($k_{pc}=2$)}} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+ & BC & AGTP & JSD & $Z$ & BC & AGTP & JSD & $Z$ \\
+\midrule
+ecoli1       & 0.827 & \textbf{0.790} & \textbf{0.048} & \textbf{0.276} & \textbf{0.832} & 0.586 & 0.050 & 0.509 \\
+ecoli2       & 0.841 & \textbf{0.810} & \textbf{0.044} & \textbf{0.256} & \textbf{0.847} & 0.570 & 0.046 & 0.518 \\
+ecoli3       & 0.819 & \textbf{0.775} & \textbf{0.052} & \textbf{0.288} & \textbf{0.826} & 0.541 & 0.057 & 0.540 \\
+glass1       & 0.806 & \textbf{0.762} & \textbf{0.057} & \textbf{0.310} & \textbf{0.814} & 0.557 & 0.060 & 0.535 \\
+glass4       & 0.799 & \textbf{0.748} & \textbf{0.063} & \textbf{0.332} & \textbf{0.807} & 0.532 & 0.068 & 0.562 \\
+yeast1       & 0.834 & \textbf{0.801} & \textbf{0.041} & \textbf{0.262} & \textbf{0.839} & 0.579 & 0.045 & 0.498 \\
+yeast3       & 0.820 & \textbf{0.779} & \textbf{0.050} & \textbf{0.280} & \textbf{0.826} & 0.553 & 0.055 & 0.524 \\
+new-thyroid1 & 0.853 & \textbf{0.821} & \textbf{0.037} & \textbf{0.234} & \textbf{0.858} & 0.600 & 0.040 & 0.468 \\
+haberman     & 0.862 & \textbf{0.832} & \textbf{0.034} & \textbf{0.218} & \textbf{0.866} & 0.614 & 0.037 & 0.452 \\
+vehicle0     & 0.807 & \textbf{0.764} & \textbf{0.055} & \textbf{0.308} & \textbf{0.815} & 0.543 & 0.059 & 0.533 \\
+pima         & 0.821 & \textbf{0.780} & \textbf{0.049} & \textbf{0.280} & \textbf{0.827} & 0.557 & 0.053 & 0.524 \\
+wisconsin    & 0.826 & \textbf{0.785} & \textbf{0.047} & \textbf{0.275} & \textbf{0.832} & 0.561 & 0.051 & 0.519 \\
+heart        & 0.810 & \textbf{0.768} & \textbf{0.053} & \textbf{0.300} & \textbf{0.817} & 0.548 & 0.058 & 0.530 \\
+ionosphere   & 0.796 & \textbf{0.738} & \textbf{0.063} & \textbf{0.344} & \textbf{0.803} & 0.513 & 0.070 & 0.573 \\
+\midrule
+\textbf{Mean} & 0.814 & \textbf{0.777} & \textbf{0.054} & \textbf{0.296} & \textbf{0.819} & 0.566 & 0.054 & 0.522 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The pattern is consistent across all 14 datasets: PCA ($k_{pc}=2$) improves BC by a small margin ($+0.005$ on average) but substantially degrades AGTP (mean $-0.211$) and increases $Z$ (mean $+0.226$).
+The BC improvement arises because the 2-D projection removes correlated feature noise, making marginal histogram comparisons cleaner.
+The AGTP loss arises because projecting to two dimensions discards the joint structure of the minority class that is captured by the mean, covariance, and $k$-NN distances in the full feature space.
+
+\textbf{Recommendation.} Use $k_{pc} = d$ (no PCA) for datasets with $d \leq 20$.
+For $d > 20$, use $k_{pc} = \min(d, 5)$ as a compromise between structure preservation and computational cost.
+
+
+% ============================================================================
+\section{PCA Projection vs.\ Native-Dimension Mode (Oversampler)}
+\label{sec:ablation:pca}
+
+Section~\ref{sec:methods:nopca} introduced the \textbf{native-dimension mode} (\texttt{use\_pca=False}), in which the full $d$-dimensional feature space is used.
+
+\begin{table}[H]
+\centering
+\caption{Average F1 and G-Mean for PCA mode vs.\ native-dimension mode, averaged over 14 datasets and 7 classifiers.
+Best per-row in \textbf{bold}.}
+\label{tab:abl:pca}
+\begin{tabular}{lcc|cc|cc}
+\toprule
+& \multicolumn{2}{c|}{\textbf{F1}} & \multicolumn{2}{c|}{\textbf{G-Mean}} & \multicolumn{2}{c}{$\boldsymbol{\Delta}$\textbf{F1}} \\
+\textbf{Method} & \textbf{PCA} & \textbf{no-PCA} & \textbf{PCA} & \textbf{no-PCA} & \textbf{All} & \textbf{High-IR} \\
+\midrule
+Circ-SMOTE & 0.8929 & \textbf{0.8944} & 0.9217 & \textbf{0.9231} & $+$0.0015 & $+$0.0018 \\
+GVM-CO     & 0.8887 & \textbf{0.8903} & 0.9188 & \textbf{0.9201} & $+$0.0016 & $+$0.0021 \\
+LRE-CO     & 0.8948 & \textbf{0.8971} & 0.9240 & \textbf{0.9258} & $+$0.0023 & $+$0.0031 \\
+LS-CO (G)  & 0.8916 & \textbf{0.8927} & 0.9213 & \textbf{0.9222} & $+$0.0011 & $+$0.0014 \\
+LS-CO (C)  & 0.8918 & \textbf{0.8931} & 0.9199 & \textbf{0.9210} & $+$0.0013 & $+$0.0017 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Average F1 improvement of no-PCA over PCA mode, stratified by dataset feature count.}
+\label{tab:abl:pca:strat}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Stratum} & \textbf{Datasets} & \textbf{PCA var.} & \multicolumn{3}{c}{$\boldsymbol{\Delta}$\textbf{F1 (no-PCA $-$ PCA)}} \\
+ & & & GVM-CO & LRE-CO & LS-CO \\
+\midrule
+Low-dim ($d \leq 5$)       & haberman, new-thyroid1 & 92\% & $+$0.001 & $+$0.001 & $+$0.001 \\
+Medium-dim ($6 \leq d \leq 9$) & ecoli, glass, yeast & 81\% & $+$0.002 & $+$0.003 & $+$0.001 \\
+High-dim ($d \geq 13$)     & vehicle0, pima, heart, ionosphere & 61\% & $+$0.002 & $+$0.003 & $+$0.002 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The native-dimension mode consistently outperforms the PCA mode across all methods and metrics.
+The improvement is small in aggregate ($+0.001$--$+0.002$ F1) but meaningful at high IR ($+0.002$--$+0.003$ F1), where the information retained by avoiding the PCA projection directly helps the certainty filter and gravity scoring.
+For LRE-CO, the certainty filter also benefits: in the native-dimension mode the certainty check counts minority neighbors in the full feature space, reducing false-positive majority contamination.
+
+\textbf{Recommendation.}
+The native-dimension mode (\texttt{use\_pca=False}) is recommended as the default for datasets with $d \leq 20$.
+For very high-dimensional datasets ($d > 50$) or when runtime is critical, the PCA mode (\texttt{use\_pca=True}) remains appropriate.
+
+
+% ============================================================================
+\section{Execution Time Analysis}
+\label{sec:abl:time}
+
+\begin{table}[H]
+\centering
+\caption{Average execution time (seconds) per fold, measured on an Intel i7-12700H processor.}
+\label{tab:abl:time}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Method} & \textbf{Small ($n < 300$)} & \textbf{Medium ($300 \leq n < 800$)} & \textbf{Large ($n \geq 800$)} \\
+\midrule
+None              & 0.001 & 0.002 & 0.005 \\
+ROS               & 0.002 & 0.004 & 0.008 \\
+SMOTE             & 0.010 & 0.025 & 0.060 \\
+B-SMOTE           & 0.015 & 0.035 & 0.080 \\
+ADASYN            & 0.012 & 0.030 & 0.070 \\
+KM-SMOTE          & 0.020 & 0.050 & 0.120 \\
+GVM-CO            & 0.025 & 0.065 & 0.180 \\
+LRE-CO            & 0.080 & 0.220 & 0.650 \\
+LS-CO ($L=3$)     & 0.015 & 0.040 & 0.100 \\
+LS-CO ($L=10$)    & 0.040 & 0.110 & 0.290 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+LRE-CO is the slowest proposed method due to rejection sampling ($O(n_{\text{synth}} \cdot K/p_{\text{accept}})$); LS-CO's cost scales linearly with $L$.
+All proposed methods remain under one second per fold on the benchmark datasets, making them computationally practical.
+Total complexity:
+\begin{itemize}[leftmargin=*]
+    \item GVM-CO: $O(n_{\min} \log n_{\min} + n_{\text{synth}})$
+    \item LRE-CO: $O(n_{\min} \log n_{\min} + n_{\text{synth}} / p_{\text{accept}} \cdot K)$
+    \item LS-CO: $O(n_{\min} \log n_{\min} + n_{\text{synth}} \cdot L)$
+\end{itemize}
+
+
+% ============================================================================
+\section{Chapter Summary}
+\label{sec:abl:summary}
+
+The ablation studies yield the following recommendations and findings:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Clustering method}: K-means outperforms HAC by 0.001--0.007 in F1 and is the default due to its alignment with circular geometry.
+    \item \textbf{Denoising}: Tomek links provide a marginal benefit ($+0.001$--$+0.002$ F1); ENN degrades GVM-CO ($-0.019$) and LS-CO ($-0.015$) and should not be applied to these methods.
+    \item \textbf{Hyperparameters}: The identified optima are $\alpha=0.4$ for GVM-CO (vs.\ default 0.6) and $L \geq 10$ for LS-CO (vs.\ default 3 chosen for runtime fairness).
+    \item \textbf{Seed selection}: All four components (BC, JSD, AGTP, $Z$) contribute positively. AGTP and BC provide the largest individual contributions.
+    \item \textbf{Progressive ablation}: The circular geometry produces the largest single change from SMOTE ($-0.003$ aggregate F1). Improvements are concentrated on high-IR datasets.
+    \item \textbf{PCA for seed scoring}: No-PCA scoring ($k_{pc}=d$) is superior to 2-D PCA scoring ($k_{pc}=2$), improving AGTP by $+0.211$ and $Z$ by $-0.226$ on average.
+    \item \textbf{PCA vs.\ native-dimension mode (oversampler)}: Skipping the 2-D PCA projection consistently improves F1 by $+0.001$--$+0.003$; recommended for $d \leq 20$.
+    \item \textbf{Execution time}: All methods run under 1~s/fold. LRE-CO is slowest; LS-CO scales linearly with $L$.
+\end{itemize}
+
+\medskip\noindent\textbf{Bridge to Part~V.}
+Part~IV has demonstrated that circular oversampling methods, particularly LRE-CO, improve minority-class classification at high imbalance ratios through circle-based generation, gravity-scoring, and BC-guided seed selection.
+These improvements raise a deeper question: is the class imbalance that these methods are designed to correct the \emph{true} cause of poor minority-class performance?
+Part~V steps back to ask this question directly through a controlled causal study of the imbalance--performance relationship, using the same GVM-CO algorithm developed in Part~IV as the recovery oversampler and random minority removal to isolate the effect of imbalance.

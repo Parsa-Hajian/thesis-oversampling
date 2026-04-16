@@ -1,0 +1,530 @@
+% =============================================================================
+% Chapter 7 -- Proposed Circular Oversampling Methods
+% =============================================================================
+
+\chapter{Proposed Circular Oversampling Methods}
+\label{ch:proposed_methods}
+
+This chapter presents the three proposed circular oversampling algorithms in full mathematical detail.
+We begin with the common preprocessing pipeline shared by all methods, then present each algorithm with its formulation, pseudocode, and design rationale.
+
+
+% ============================================================================
+\section{Common Framework: Circle-Based Generation}
+\label{sec:methods:framework}
+
+All three algorithms share a common geometric framework based on four steps.
+
+\subsection{Step 1: PCA Projection}
+
+The minority class points $\{\vx_i\}_{i=1}^{n_{\min}} \subset \R^d$ are projected to a 2-D subspace via PCA:
+\begin{equation}
+    \hat{\vx}_i = (\vx_i - \bar{\vx}) \cdot \mathbf{V}_2, \quad \hat{\vx}_i \in \R^2,
+    \label{eq:pca_proj}
+\end{equation}
+where $\bar{\vx}$ is the mean of the minority class and $\mathbf{V}_2 \in \R^{d \times 2}$ contains the first two principal component vectors.
+This projection enables circular geometry in the 2-D subspace.
+After generation, the inverse PCA transform (Equation~\eqref{eq:inverse_pca}) maps the 2-D disk back to $\R^d$ as a hyper-ellipsoidal region, since the transform scales coordinates by the corresponding PCA eigenvalues.
+The circular shape is exact only in the projected subspace; in the original feature space the generation region is ellipsoidal, with aspect ratios determined by the ratio of PCA eigenvalues.
+
+\subsection{Step 2: $k$-NN Graph Construction}
+
+A $k$-nearest-neighbor graph is constructed on the projected minority points $\hat{\mathcal{X}}_{\min} = \{\hat{\vx}_i\}$.
+For each point $\hat{\vx}_i$, the indices of its $k$ nearest neighbors in $\hat{\mathcal{X}}_{\min}$ are stored.
+
+\subsection{Step 3: Circle Formation}
+
+For each synthetic sample, a seed point $\hat{\vx}_i$ and a neighbor $\hat{\vx}_j$ are selected.
+The circle is defined by their midpoint and half-distance:
+\begin{align}
+    \vc_{ij} &= \frac{\hat{\vx}_i + \hat{\vx}_j}{2}, \label{eq:circle_center}\\
+    R_{ij}   &= \frac{\|\hat{\vx}_i - \hat{\vx}_j\|}{2}. \label{eq:circle_radius}
+\end{align}
+The resulting circle $\mathcal{D}(\vc_{ij}, R_{ij})$ is the closed disk centered at $\vc_{ij}$ with radius $R_{ij}$.
+
+\subsection{Step 4: Inverse PCA Transform}
+
+After generation in 2-D PCA space, synthetic points are lifted back to $\R^d$:
+\begin{equation}
+    \vx_{\text{new}} = \hat{\vx}_{\text{new}} \cdot \mathbf{V}_2^\top + \bar{\vx}.
+    \label{eq:inverse_pca}
+\end{equation}
+
+\subsection{Native-Dimension Mode (\texttt{use\_pca=False})}
+\label{sec:methods:nopca}
+
+As an alternative to the 2-D PCA projection described above, all three algorithms support a \textbf{native-dimension mode} controlled by the \texttt{use\_pca=False} flag.
+In this mode, Steps~1 and~4 are omitted entirely: all geometric operations (circle formation, ball sampling, clustering, and the $k$-NN graph) are performed directly in the original $d$-dimensional feature space.
+
+\paragraph{Motivation.}
+The PCA projection concentrates the geometry into the two directions of maximum variance, retaining between 52\% and 96\% of minority-class variance across the 14 benchmark datasets (median: 74\%).
+The remaining variance — up to 48\% for the 34-feature ionosphere dataset — is discarded before any circle is formed, and synthetic points are subsequently lifted back via the inverse transform.
+
+When \texttt{use\_pca=False}, no information is discarded.
+The circle in Step~3 becomes a $d$-dimensional hyperball:
+\begin{align}
+    \vc_{ij} &= \tfrac{1}{2}(\vx_i + \vx_j), \\
+    R_{ij}   &= \tfrac{1}{2}\|\vx_i - \vx_j\|_2.
+\end{align}
+The uniform sampling formula generalises to $d$-dimensional volume-uniform sampling:
+\begin{equation}
+    r = R_{ij} \cdot U^{1/d}, \quad U \sim \mathcal{U}(0, 1),
+    \label{eq:nd_radius_sample}
+\end{equation}
+ensuring that the density of sampled points is uniform with respect to the $d$-dimensional volume element.
+Gravity direction bias (GVM-CO, Algorithm~1) generalises from Von Mises angular sampling to the von Mises--Fisher (vMF) distribution on $\mathcal{S}^{d-1}$:
+\begin{equation}
+    \vz \sim \mathcal{N}(\bm{0}, \mathbf{I}_d), \quad \hat{\vz} = \frac{\vz + \kappa\,\hat{\bm{\mu}}}{\|\vz + \kappa\,\hat{\bm{\mu}}\|},
+    \label{eq:vmf_approx}
+\end{equation}
+where $\hat{\bm{\mu}}$ is the unit-vector direction from the circle center toward the cluster gravity center and $\kappa$ is the same concentration score used in the 2-D mode.
+
+\paragraph{Trade-off.}
+The native-dimension mode avoids PCA information loss but introduces the \emph{curse of dimensionality}: in high-dimensional feature spaces ($d \gtrsim 15$), the volume of a $d$-dimensional ball concentrates near its surface, so uniform ball sampling produces points that are all approximately at radius $R$.
+An empirical ablation comparing both modes is provided in Chapter~\ref{ch:ablation}.
+
+The \textbf{Circular-SMOTE} baseline uses uniform disk sampling: $\theta \sim \mathcal{U}(0,2\pi)$, $r = R_{ij}\sqrt{U}$ ($U \sim \mathcal{U}(0,1)$), $\hat{\vx}_{\text{new}} = \vc_{ij} + r(\cos\theta,\sin\theta)^\top$.
+The $\sqrt{U}$ radial scaling ensures area-uniform coverage (since the probability of a point at radius $r$ must be proportional to $r$).
+
+
+% ============================================================================
+\section{Gravity Scoring Framework}
+\label{sec:methods:gravity}
+
+Algorithms~1 and~3 use a gravity scoring framework that quantifies the attractiveness of each minority cluster.
+
+\subsection{Cluster Metrics}
+
+After clustering the projected minority points into $K$ groups $\{\mathcal{C}_1, \ldots, \mathcal{C}_K\}$, the following metrics are computed for each cluster $\mathcal{C}_c$ with $n_c$ points:
+
+\begin{definition}[Cluster Spread]
+\begin{equation}
+    \mathrm{Spread}_c = \frac{1}{n_c} \sum_{i \in \mathcal{C}_c} \|\hat{\vx}_i - \boldsymbol{\mu}_c\|,
+    \label{eq:spread}
+\end{equation}
+where $\boldsymbol{\mu}_c = \frac{1}{n_c}\sum_{i \in \mathcal{C}_c} \hat{\vx}_i$ is the cluster centroid.
+\end{definition}
+
+\begin{definition}[Cluster Area]
+\begin{equation}
+    \mathrm{Area}_c = \pi \cdot \mathrm{Spread}_c^2 + \epsilon.
+    \label{eq:area}
+\end{equation}
+\end{definition}
+
+\begin{definition}[Cluster Density]
+\begin{equation}
+    \mathrm{Density}_c = \frac{n_c}{\mathrm{Area}_c}.
+    \label{eq:density}
+\end{equation}
+\end{definition}
+
+\begin{definition}[Cluster Sparsity]
+\begin{equation}
+    \mathrm{Sparsity}_c = \frac{1}{n_c} \sum_{i \in \mathcal{C}_c} \frac{1}{k_{\text{nn}}} \sum_{j=1}^{k_{\text{nn}}} \|\hat{\vx}_i - \hat{\vx}_j^{(\text{nn})}\|,
+    \label{eq:sparsity}
+\end{equation}
+where the inner sum is over the $k_{\text{nn}}$ nearest neighbors of $\hat{\vx}_i$ within cluster $\mathcal{C}_c$.
+\end{definition}
+
+\begin{definition}[Gravity Score]
+\begin{equation}
+    g_c = \frac{\mathrm{Density}_c}{\mathrm{Spread}_c \cdot \mathrm{Sparsity}_c + \epsilon}.
+    \label{eq:gravity}
+\end{equation}
+The numerator $\mathrm{Density}_c$ measures how densely populated the cluster is per unit area.
+The denominator $\mathrm{Spread}_c \cdot \mathrm{Sparsity}_c$ penalises clusters that are simultaneously spatially extended (large spread) \emph{and} internally loose (high mean nearest-neighbor distance).
+A cluster that is compact and well-populated receives the highest gravity scores.
+\end{definition}
+
+To ensure scale-invariance, the raw gravity scores are normalised within each dataset:
+\begin{equation}
+    \tilde{g}_c = \frac{g_c - \min_{c'} g_{c'}}{\max_{c'} g_{c'} - \min_{c'} g_{c'} + \varepsilon},
+    \label{eq:gravity_norm}
+\end{equation}
+so that $\tilde{g}_c \in [0,1]$ regardless of the absolute scale of the feature space.
+
+\subsection{Gravity Center}
+
+The gravity center is a density-weighted centroid pulled toward regions of high local density:
+
+\begin{definition}[Gravity Center]
+\begin{equation}
+    \vg_c = \frac{\sum_{i \in \mathcal{C}_c} w_i \cdot \hat{\vx}_i}{\sum_{i \in \mathcal{C}_c} w_i}, \quad w_i = \frac{1}{\sigma_i^{\text{local}} + \epsilon},
+    \label{eq:gravity_centre}
+\end{equation}
+where $\sigma_i^{\text{local}}$ is the mean $k$-NN distance of point $\hat{\vx}_i$ within its cluster.
+Points in denser local regions have smaller $\sigma_i^{\text{local}}$ and hence larger weights $w_i$, pulling the gravity center toward the densest part of the cluster.
+\end{definition}
+
+
+% ============================================================================
+\section{Algorithm 1: Gravity-Biased Von Mises Circular Oversampling (GVM-CO)}
+\label{sec:methods:gvm_co}
+
+GVM-CO generates synthetic samples inside circles formed between minority point pairs, with the angular distribution biased by a Von Mises distribution directed toward the gravity center of the seed's cluster.
+
+\subsection{Von Mises Direction}
+
+For a circle defined by seed $\hat{\vx}_i$ (in cluster $c$) and neighbor $\hat{\vx}_j$, with center $\vc_{ij}$, the Von Mises mean direction is the angle from the circle center toward the gravity center:
+\begin{equation}
+    \mu = \arctan2\!\left(\vg_c^{(y)} - \vc_{ij}^{(y)},\; \vg_c^{(x)} - \vc_{ij}^{(x)}\right).
+    \label{eq:mu_direction}
+\end{equation}
+
+\subsection{Von Mises Concentration}
+
+The concentration $\kappa$ controls the strength of directional biasing and is computed from two sub-scores.
+
+\paragraph{Distance score $s_d$.} Normalised distance from the circle center to the gravity center (closer centers get higher scores):
+\begin{equation}
+    s_d = \frac{d_{\max} - d(\vc_{ij}, \vg_c)}{d_{\max} - d_{\min} + \epsilon},
+    \label{eq:s_d}
+\end{equation}
+where $d_{\min}$ and $d_{\max}$ are the extreme distances across all circles in the current batch.
+
+\paragraph{Gravity score $s_g$.} Normalised gravity score of the seed's cluster:
+\begin{equation}
+    s_g = \frac{g_c - g_{\min}}{g_{\max} - g_{\min} + \epsilon}.
+    \label{eq:s_g}
+\end{equation}
+
+\paragraph{Combined score.} The two sub-scores are blended using an additive--multiplicative combination:
+\begin{equation}
+    s_{\text{combined}} = \alpha \cdot \frac{s_d + s_g}{2} + (1 - \alpha) \cdot s_d \cdot s_g,
+    \label{eq:s_combined}
+\end{equation}
+where $\alpha \in [0, 1]$ controls the balance between additive (robust) and multiplicative (selective) combination.
+
+\paragraph{Concentration mapping.}
+\begin{equation}
+    \kappa = \kappa_{\max} \cdot s_{\text{combined}}^{\gamma},
+    \label{eq:kappa}
+\end{equation}
+where $\kappa_{\max}$ is the maximum concentration and $\gamma > 0$ is a nonlinearity exponent.
+A minimum floor prevents complete deactivation of the bias:
+\begin{equation}
+    \kappa_c = \max\!\left(\kappa_{\max} \cdot s_c^{\gamma},\; \varepsilon\right),
+    \label{eq:kappa_floor}
+\end{equation}
+where $\varepsilon = 10^{-6}$.
+
+\subsection{Sampling Procedure}
+
+Each synthetic point is generated as:
+\begin{align}
+    \theta &\sim \mathrm{VonMises}(\mu, \kappa), \label{eq:theta_gvm}\\
+    r      &= R_{ij} \cdot \sqrt{U}, \quad U \sim \mathcal{U}(0,1), \label{eq:r_gvm}\\
+    \hat{\vx}_{\text{new}} &= \vc_{ij} + r \cdot (\cos\theta,\; \sin\theta)^{\top}. \label{eq:x_new_gvm}
+\end{align}
+
+\subsection{Cross-Cluster Border Restriction}
+
+An optional variant of GVM-CO (GVM-CO-CC) enforces that the neighbor $\hat{\vx}_j$ comes from the nearest \emph{other} cluster:
+\begin{equation}
+    c^* = \argmin_{c' \neq c} \|\boldsymbol{\mu}_c - \boldsymbol{\mu}_{c'}\|.
+    \label{eq:nearest_cluster}
+\end{equation}
+The $k$-NN search for neighbors of seeds in cluster $c$ is restricted to points in cluster $c^*$.
+This promotes generation in inter-cluster border regions, improving connectivity between minority sub-populations.
+As shown in the experimental results (Chapter~\ref{ch:results}), GVM-CO-CC is most useful at low imbalance ratios; at high imbalance the inter-cluster region is typically majority-dominated, making cross-cluster pairing counterproductive.
+
+\subsection{Full-Dataset Clustering Variant}
+
+Inspired by K-Means SMOTE~\cite{douzas2018improving}, a third variant applies K-means to the \emph{full dataset} $\mathcal{X} = \mathcal{X}_{\min} \cup \mathcal{X}_{\text{maj}}$.
+The procedure:
+\begin{enumerate}[leftmargin=*]
+    \item Apply K-means with $K$ clusters to the full projected dataset.
+    \item For each cluster $c$, compute the minority ratio:
+    \begin{equation}
+        \rho_c = \frac{|\{i : c_i = c, \; y_i = y_{\min}\}|}{|\{i : c_i = c\}|}.
+    \end{equation}
+    \item Select clusters where $\rho_c \geq \rho_{\min}$ (default $\rho_{\min} = \text{IR}^{-1}$).
+    \item Within each selected cluster, compute gravity scores and centers using only the minority points.
+    \item Apply GVM-CO generation within selected clusters, with synthetic samples allocated proportionally to the number of minority points per cluster.
+\end{enumerate}
+The key advantage is that cluster boundaries are informed by the majority distribution, naturally avoiding generation in majority-dominated regions.
+
+\begin{algorithm}[H]
+\caption{GVM-CO: Gravity-biased Von Mises Circular Oversampling}
+\label{alg:gvm_co}
+\KwInput{Minority $\mathcal{X}_{\min}$, $K$, $k_{\text{seed}}$, $\kappa_{\max}$, $\gamma$, $\alpha$}
+\KwOutput{Synthetic points $\mathcal{S}$}
+
+$\hat{\mathcal{X}}_{\min} \leftarrow \mathrm{PCA}(\mathcal{X}_{\min}, p=2)$\;
+$\{c_i\} \leftarrow \mathrm{K\text{-}Means}(\hat{\mathcal{X}}_{\min}, K)$\;
+Compute gravity scores $\{g_c\}$ and gravity centers $\{\vg_c\}$ via Eqs.~\eqref{eq:gravity}--\eqref{eq:gravity_centre}\;
+Build $k_{\text{seed}}$-NN graph on $\hat{\mathcal{X}}_{\min}$\;
+$\mathcal{S} \leftarrow \emptyset$\;
+\For{$t = 1$ \KwTo $n_{\text{synth}}$}{
+    Select random seed $\hat{\vx}_i$ in cluster $c$\;
+    Select random neighbor $\hat{\vx}_j$ from $k$-NN of $\hat{\vx}_i$\;
+    $\vc \leftarrow \frac{1}{2}(\hat{\vx}_i + \hat{\vx}_j)$;\quad $R \leftarrow \frac{1}{2}\|\hat{\vx}_i - \hat{\vx}_j\|$\;
+    $\mu \leftarrow \arctan2(\vg_c - \vc)$\;
+    Compute $s_d$, $s_g$, $s_{\text{combined}}$, $\kappa$ via Eqs.~\eqref{eq:s_d}--\eqref{eq:kappa_floor}\;
+    $\theta \sim \mathrm{VonMises}(\mu, \kappa)$;\quad $r \leftarrow R\sqrt{U}$, $U \sim \mathcal{U}(0,1)$\;
+    $\hat{\vx}_{\text{new}} \leftarrow \vc + r(\cos\theta, \sin\theta)^\top$\;
+    $\mathcal{S} \leftarrow \mathcal{S} \cup \{\hat{\vx}_{\text{new}}\}$\;
+}
+Lift $\mathcal{S}$ to $\R^d$ via inverse PCA (Eq.~\eqref{eq:inverse_pca})\;
+\Return{$\mathcal{S}$}
+\end{algorithm}
+
+
+% ============================================================================
+\section{Algorithm 2: Local Region Estimation Circular Oversampling (LRE-CO)}
+\label{sec:methods:lre_co}
+
+LRE-CO addresses cross-boundary contamination by restricting generation to the intersection of the circular disk with a Voronoi cell defined by the cluster partition.
+
+\subsection{Voronoi Partitioning}
+
+Given $K$ cluster centroids $\{\boldsymbol{\mu}_c\}_{c=1}^K$, the 2-D space is partitioned into Voronoi cells:
+\begin{equation}
+    \mathcal{V}_c = \left\{\hat{\vx} \in \R^2 \;\middle|\; \|\hat{\vx} - \boldsymbol{\mu}_c\| \leq \|\hat{\vx} - \boldsymbol{\mu}_{c'}\|,\; \forall c' \neq c\right\}.
+    \label{eq:voronoi}
+\end{equation}
+Each point in $\R^2$ belongs to exactly one Voronoi cell.
+
+\subsection{Certainty Threshold}
+
+Before generating synthetic samples within a circle, LRE-CO evaluates whether the circle lies in a minority-dominated region.
+The certainty of a disk $\mathcal{D}(\vc_{ij}, R_{ij})$ is defined as:
+\begin{equation}
+    \mathrm{certainty}(\mathcal{D}) = \frac{n_{\min}^{\text{inside}}}{n_{\min}^{\text{inside}} + n_{\text{maj}}^{\text{inside}}},
+    \label{eq:certainty}
+\end{equation}
+where $n_{\min}^{\text{inside}}$ and $n_{\text{maj}}^{\text{inside}}$ are the number of minority and majority points inside the disk, respectively.
+If $\mathrm{certainty}(\mathcal{D}) < \tau$ (default $\tau = 0.80$), the circle is rejected, preventing synthetic generation in majority-dominated regions.
+
+\begin{remark}[2-D Approximation]
+The certainty metric is computed in the 2-D PCA subspace.
+For datasets where the first two principal components explain a small fraction of the total variance, a disk that appears minority-dominated in 2-D may straddle a class boundary in the remaining dimensions.
+The effectiveness of the certainty mechanism therefore diminishes as the intrinsic dimensionality of the minority distribution increases relative to the PCA subspace.
+Practitioners should verify the explained variance of the 2-D projection and consider using a stricter threshold $\tau$ for high-dimensional datasets (see Table~\ref{tab:setup:pca_variance} in Chapter~\ref{ch:experimental_setup}).
+\end{remark}
+
+\subsection{Constrained Generation}
+
+For an eligible circle defined by seed $\hat{\vx}_i$ (in cluster $c$) and neighbor $\hat{\vx}_j$, LRE-CO restricts synthetic point generation to:
+\begin{equation}
+    \hat{\vx}_{\text{new}} \in \mathcal{D}(\vc_{ij}, R_{ij}) \cap \mathcal{V}_c.
+    \label{eq:lre_constraint}
+\end{equation}
+
+\subsection{Rejection Sampling}
+
+Since the intersection $\mathcal{D}(\vc_{ij}, R_{ij}) \cap \mathcal{V}_c$ does not have a simple closed-form shape, LRE-CO uses rejection sampling:
+\begin{enumerate}[leftmargin=*]
+    \item Generate a candidate point $\hat{\vx}_{\text{cand}}$ uniformly inside the disk $\mathcal{D}(\vc_{ij}, R_{ij})$.
+    \item Check whether $\hat{\vx}_{\text{cand}} \in \mathcal{V}_c$ by verifying $\argmin_{c'} \|\hat{\vx}_{\text{cand}} - \boldsymbol{\mu}_{c'}\| = c$.
+    \item If accepted, add to the synthetic set. Otherwise reject and repeat.
+\end{enumerate}
+The acceptance rate depends on the overlap between the disk and the Voronoi cell.
+For circles whose center is near the cluster centroid, the acceptance rate is typically high; a maximum iteration limit prevents infinite loops.
+
+\subsection{Allocation Strategy}
+
+Synthetic samples are allocated to clusters proportionally to cluster size weighted by normalised gravity score:
+\begin{equation}
+    n_c^{\text{synth}} = n_{\text{synth}} \cdot \frac{n_c \cdot \tilde{g}_c}{\sum_{c'=1}^{K} n_{c'} \cdot \tilde{g}_{c'}}.
+    \label{eq:lre_allocation}
+\end{equation}
+This assigns more synthetic samples to clusters that are both large and high-gravity.
+Users requiring uniform coverage across all minority sub-populations can set all $\tilde{g}_c = 1$, reducing the allocation to size-proportional.
+
+\begin{algorithm}[H]
+\caption{LRE-CO: Local Region Estimation Circular Oversampling}
+\label{alg:lre_co}
+\KwInput{Minority $\mathcal{X}_{\min}$, majority $\mathcal{X}_{\text{maj}}$, $K$, $k_{\text{seed}}$, $\kappa_{\max}$, $\gamma$, $\alpha$, $\tau$}
+\KwOutput{Synthetic points $\mathcal{S}$}
+
+$\hat{\mathcal{X}}_{\min} \leftarrow \mathrm{PCA}(\mathcal{X}_{\min}, p=2)$\;
+$\{c_i\}, \{\boldsymbol{\mu}_c\} \leftarrow \mathrm{K\text{-}Means}(\hat{\mathcal{X}}_{\min}, K)$\;
+Compute gravity scores, gravity centers\;
+Compute Voronoi partition $\{\mathcal{V}_c\}_{c=1}^K$ via Eq.~\eqref{eq:voronoi}\;
+Allocate $n_c^{\text{synth}}$ per cluster via Eq.~\eqref{eq:lre_allocation}\;
+$\mathcal{S} \leftarrow \emptyset$\;
+\For{each cluster $c = 1, \ldots, K$}{
+    \For{$t = 1$ \KwTo $n_c^{\text{synth}}$}{
+        Select seed $\hat{\vx}_i \in \mathcal{C}_c$, neighbor $\hat{\vx}_j$\;
+        Form circle $(\vc, R)$ via Eqs.~\eqref{eq:circle_center}--\eqref{eq:circle_radius}\;
+        \If{$\mathrm{certainty}(\mathcal{D}) < \tau$ (Eq.~\eqref{eq:certainty})}{
+            Skip circle and select new pair\;
+        }
+        \Repeat{$\hat{\vx}_{\text{cand}} \in \mathcal{V}_c$ \textbf{or} max iterations}{
+            $\theta \sim \mathcal{U}(0, 2\pi)$;\quad $r \leftarrow R\sqrt{U}$\;
+            $\hat{\vx}_{\text{cand}} \leftarrow \vc + r(\cos\theta, \sin\theta)^\top$\;
+        }
+        $\mathcal{S} \leftarrow \mathcal{S} \cup \{\hat{\vx}_{\text{cand}}\}$\;
+    }
+}
+Lift $\mathcal{S}$ to $\R^d$ via inverse PCA\;
+\Return{$\mathcal{S}$}
+\end{algorithm}
+
+
+% ============================================================================
+\section{Algorithm 3: Layered Segmental Circular Oversampling (LS-CO)}
+\label{sec:methods:ls_co}
+
+LS-CO introduces a structured decomposition of the circular region into concentric annular layers and angular segments, with differentiated sampling densities.
+
+\subsection{Layer Decomposition}
+
+Each circle of radius $R_{ij}$ is divided into $L$ concentric annular layers with equal radial width $\Delta r = R_{ij}/L$:
+\begin{equation}
+    \mathcal{A}_\ell = \left\{\hat{\vx} \;\middle|\; r_{\ell-1} \leq \|\hat{\vx} - \vc_{ij}\| \leq r_\ell\right\}, \quad r_\ell = \frac{\ell}{L} \cdot R_{ij}, \quad \ell = 1, \ldots, L.
+    \label{eq:layers}
+\end{equation}
+The rings have equal radial width but unequal areas: the area of ring $\ell$ is $\pi(r_\ell^2 - r_{\ell-1}^2) = \pi R_{ij}^2 (2\ell-1)/L^2$, so the outermost ring is $(2L-1)$ times larger than the innermost.
+Synthetic samples are allocated uniformly across layers by default, deliberately over-sampling the inner rings relative to their area, concentrating generation near the circle center where the seed minority instances are located and the minority class is most reliably represented.
+
+\subsection{Angular Segmentation}
+
+Each layer is divided into $M$ angular segments:
+\begin{equation}
+    \mathcal{S}_{\ell,m} = \mathcal{A}_\ell \cap \left\{\hat{\vx} \;\middle|\; \theta_{m-1} \leq \angle(\hat{\vx} - \vc_{ij}) < \theta_m\right\}, \quad \theta_m = \frac{2\pi m}{M}.
+    \label{eq:segments}
+\end{equation}
+
+\subsection{Layer Density Allocation}
+
+The number of synthetic samples in each layer is determined by a gravity-proximity weight:
+\begin{equation}
+    w_\ell = \exp\!\left(-\beta \cdot \frac{|r_\ell^* - r_{\text{gc}}|}{R_{ij}}\right),
+    \label{eq:layer_weight}
+\end{equation}
+where $r_\ell^* = \frac{r_{\ell-1} + r_\ell}{2}$ is the midpoint radius and $r_{\text{gc}}$ is the distance from the circle center to the projection of the gravity center onto the radial axis.
+The allocation per layer is:
+\begin{equation}
+    n_\ell = n_{\text{per-circle}} \cdot \frac{w_\ell}{\sum_{\ell'} w_{\ell'}}.
+    \label{eq:layer_alloc}
+\end{equation}
+
+\subsection{Within-Segment Sampling}
+
+Within each segment $\mathcal{S}_{\ell,m}$, the angular distribution uses a Von Mises distribution with segment-local concentration:
+\begin{equation}
+    \kappa_{\ell,m} = \kappa_{\max} \cdot \frac{L - \ell + 1}{L} \cdot \exp\!\left(-\frac{|\theta_m^{\text{mid}} - \mu|^2}{2\sigma_\theta^2}\right),
+    \label{eq:seg_kappa}
+\end{equation}
+where $\theta_m^{\text{mid}} = \frac{\theta_{m-1} + \theta_m}{2}$ is the midpoint angle and $\mu$ is the gravity direction.
+Inner layers (smaller $\ell$) and segments aligned with $\mu$ receive higher concentration.
+
+The radial component within layer $\ell$ uses area-corrected uniform sampling:
+\begin{equation}
+    r = \sqrt{r_{\ell-1}^2 + U \cdot (r_\ell^2 - r_{\ell-1}^2)}, \quad U \sim \mathcal{U}(0, 1).
+    \label{eq:annulus_sample}
+\end{equation}
+
+\begin{algorithm}[H]
+\caption{LS-CO: Layered Segmental Circular Oversampling}
+\label{alg:ls_co}
+\KwInput{Minority $\mathcal{X}_{\min}$, $K$, $k_{\text{seed}}$, $L$, $M$, $\kappa_{\max}$, $\beta$, $\sigma_\theta$}
+\KwOutput{Synthetic points $\mathcal{S}$}
+
+$\hat{\mathcal{X}}_{\min} \leftarrow \mathrm{PCA}(\mathcal{X}_{\min}, p=2)$\;
+$\{c_i\} \leftarrow \mathrm{Cluster}(\hat{\mathcal{X}}_{\min}, K)$\;
+Compute gravity scores and centers via Eqs.~\eqref{eq:gravity}--\eqref{eq:gravity_centre}\;
+Build $k_{\text{seed}}$-NN graph\;
+$\mathcal{S} \leftarrow \emptyset$\;
+\For{each synthetic sample}{
+    Select seed $\hat{\vx}_i$ and neighbor $\hat{\vx}_j$\;
+    Form circle $(\vc, R)$ via Eqs.~\eqref{eq:circle_center}--\eqref{eq:circle_radius}\;
+    Compute gravity direction $\mu = \arctan2(\vg_c - \vc)$\;
+    Compute layer weights $\{w_\ell\}_{\ell=1}^L$ (Eq.~\eqref{eq:layer_weight}) and allocations $\{n_\ell\}$ (Eq.~\eqref{eq:layer_alloc})\;
+    \For{$\ell = 1$ \KwTo $L$}{
+        \For{each sample allocated to layer $\ell$}{
+            Select segment $m$ with Von Mises-weighted probability\;
+            $\kappa_{\ell,m} \leftarrow$ Eq.~\eqref{eq:seg_kappa}\;
+            $\theta \sim \mathrm{VonMises}(\mu, \kappa_{\ell,m})$ restricted to $[\theta_{m-1}, \theta_m)$\;
+            $r \leftarrow$ area-corrected sample in $[r_{\ell-1}, r_\ell]$ (Eq.~\eqref{eq:annulus_sample})\;
+            $\hat{\vx}_{\text{new}} \leftarrow \vc + r(\cos\theta, \sin\theta)^\top$\;
+            $\mathcal{S} \leftarrow \mathcal{S} \cup \{\hat{\vx}_{\text{new}}\}$\;
+        }
+    }
+}
+Lift $\mathcal{S}$ to $\R^d$ via inverse PCA\;
+\Return{$\mathcal{S}$}
+\end{algorithm}
+
+LS-CO has two primary variants: \textbf{LS-CO (G)} uses a single gravity center computed from all minority points, and \textbf{LS-CO (C)} uses per-cluster gravity centers computed after K-means clustering, providing finer control for multi-modal minority distributions.
+
+
+% ============================================================================
+\section{Optional Post-Hoc Denoising}
+\label{sec:methods:denoising}
+
+All three algorithms support optional denoising after synthetic sample generation:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Tomek Links}: Identifies pairs of instances from different classes that are mutual nearest neighbors and removes the majority instance (or both), cleaning the decision boundary.
+    \item \textbf{Edited Nearest Neighbours (ENN)}: Removes any instance whose class label disagrees with the majority of its $k$-nearest neighbors. More aggressive than Tomek Links.
+\end{itemize}
+
+Denoising is applied to the \emph{combined} dataset (original + synthetic) before classifier training.
+As shown in the ablation (Chapter~\ref{ch:ablation}), Tomek links provide a small net improvement for GVM-CO and LRE-CO, while ENN is counterproductive for these methods because the circular generation already incorporates boundary-avoidance mechanisms internally.
+
+
+% ============================================================================
+\section{Comparison of the Three Algorithms}
+\label{sec:methods:comparison}
+
+Table~\ref{tab:method_comparison} summarises the key differences between the three algorithms.
+
+\begin{table}[H]
+\centering
+\caption{Comparison of the three proposed circular oversampling algorithms.}
+\label{tab:method_comparison}
+\small
+\begin{tabular}{p{3.5cm}p{3.5cm}p{3.5cm}p{3.5cm}}
+\toprule
+\textbf{Feature} & \textbf{GVM-CO} & \textbf{LRE-CO} & \textbf{LS-CO} \\
+\midrule
+Angular distribution & Von Mises & Uniform (or Von Mises) + rejection & Von Mises per segment \\
+Region constraint & None (full disk) & Voronoi cell & Layer + segment \\
+Spatial control & Global (gravity direction) & Local (Voronoi boundary) & Structured (layers) \\
+Cross-cluster variant & Yes (GVM-CO-CC) & N/A & N/A \\
+Full-dataset variant & Yes (KM-SMOTE style) & N/A & N/A \\
+Rejection sampling & No & Yes & No \\
+Hyperparameters & $K, k, \kappa_{\max}, \gamma, \alpha$ & $K, k, \kappa_{\max}, \gamma, \alpha, \tau$ & $K, k, L, M, \kappa_{\max}, \beta, \sigma_\theta$ \\
+Complexity (generation) & $\mathcal{O}(n_{\text{synth}})$ & $\mathcal{O}(n_{\text{synth}} \cdot K/p_{\text{accept}})$ & $\mathcal{O}(n_{\text{synth}} \cdot L)$ \\
+Preprocessing & \multicolumn{3}{c}{$\mathcal{O}(n_{\min} \log n_{\min})$ (shared: PCA + $k$-NN graph)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+% ============================================================================
+\section{Computational Complexity}
+\label{sec:methods:complexity}
+
+The computational cost of each algorithm has five components:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{PCA}: $\mathcal{O}(n_{\min} \cdot d^2)$ for the covariance matrix and eigendecomposition. Negligible for moderate $d$ since $n_{\min}$ is small.
+    \item \textbf{$k$-NN graph}: $\mathcal{O}(n_{\min}^2)$ naively, or $\mathcal{O}(n_{\min} \log n_{\min})$ with a KD-tree in the 2-D PCA space.
+    \item \textbf{Clustering}: $\mathcal{O}(n_{\min} \cdot K \cdot T_{\text{iter}})$ for K-Means with $T_{\text{iter}}$ iterations.
+    \item \textbf{Generation}: $\mathcal{O}(n_{\text{synth}})$ per sample for GVM-CO and LS-CO; $\mathcal{O}(n_{\text{synth}} / p_{\text{accept}})$ for LRE-CO, where $p_{\text{accept}}$ is the average fraction of disk area inside the Voronoi cell.
+\end{enumerate}
+
+Since $n_{\min}$ is typically small by definition, the dominant cost is usually the generation step.
+All three methods are comparable in computational cost to K-Means SMOTE and are substantially faster than GAN-based approaches.
+
+
+% ============================================================================
+\section{Chapter Summary}
+\label{sec:methods:summary}
+
+This chapter has presented the three proposed circular oversampling algorithms.
+All three share a common framework based on PCA projection, $k$-NN graph construction, circle formation, and inverse PCA lifting.
+They differ in how they control the placement of synthetic samples within each circle:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{GVM-CO} combines clustering-based gravity scoring with Von Mises directional sampling, biasing generation toward dense minority regions while preserving diversity through the radial component.
+    \item \textbf{LRE-CO} restricts generation to the intersection of circular disks with Voronoi cells, preventing cross-boundary contamination and enabling fine-grained local generation.
+    \item \textbf{LS-CO} decomposes circular regions into layers and segments, with gravity-weighted density allocation and per-segment Von Mises concentration, providing structured control over sample placement.
+\end{enumerate}
+
+The next chapter describes the experimental setup used to evaluate these algorithms.

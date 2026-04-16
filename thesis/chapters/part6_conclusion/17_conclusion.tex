@@ -1,0 +1,134 @@
+% =============================================================================
+% Chapter 17 -- Unified Conclusion
+% =============================================================================
+
+\chapter{Unified Conclusion}
+\label{ch:conclusion}
+
+This thesis has pursued a single coherent research programme across two interconnected works.
+Parts~II--III developed a circular oversampling pipeline with BC-guided seed selection and three algorithms (GVM-CO, LRE-CO, LS-CO) that outperform linear interpolation methods in controlled benchmarks.
+Part~IV tested the causal assumption underlying all oversampling research, using uniform random minority removal to isolate the effect of imbalance from confounding factors.
+This chapter synthesises the findings, answers all research questions, identifies cross-cutting themes, and charts directions for future work.
+
+
+% ============================================================================
+\section{Summary of Contributions}
+\label{sec:conc:contributions}
+
+The thesis makes five primary contributions, spanning algorithmic design and empirical methodology.
+
+\begin{enumerate}[label=\textbf{C\arabic*.}, leftmargin=*, itemsep=6pt]
+
+  \item \textbf{BC-guided seed selection for minority-class oversampling.}
+  Chapter~\ref{ch:seed_selection} introduces a four-stage pipeline (K-means clustering, PCA projection, BC + AGTP + JSD + $Z$ composite scoring, ranked selection) that identifies representative, geometrically faithful, and smooth seed sets.
+  The composite criterion improves AGTP from 0.635 (random) to 0.839 and downstream F1 by $+0.025$ per classifier over ten benchmarks.
+
+  \item \textbf{GVM-CO: gravity-biased Von Mises circular oversampling.}
+  Chapter~\ref{ch:proposed_methods} introduces Gravity-biased Von Mises Circular Oversampling (Algorithm~\ref{alg:gvm_co}).
+  The gravity score $g_c = \text{Density}_c / (\text{Spread}_c \cdot \text{Sparsity}_c + \varepsilon)$ weights each circle by its structural importance; the Von Mises direction $\mu = \arctan2(\mathbf{g}_c - \mathbf{c}_{ij})$ and concentration $\kappa = \kappa_{\max} \cdot s_{\text{combined}}^\gamma$ focus synthesis in the safest and densest regions.
+
+  \item \textbf{LRE-CO and LS-CO: Voronoi-constrained and layered-segmental oversampling.}
+  LRE-CO (Local Region Estimation, Algorithm~\ref{alg:lre_co}) partitions the minority class into Voronoi cells and enforces a certainty threshold ($\tau = 0.80$) that rejects circles crossing cluster boundaries.
+  LS-CO (Layered Segmental, Algorithm~\ref{alg:ls_co}) decomposes each circle into $L$ concentric rings and $M$ angular segments, directing synthesis toward the cluster's gravity center via exponential layer weights.
+  Together these three algorithms cover qualitatively different geometric regimes of minority class structure.
+
+  \item \textbf{A controlled degradation-and-recovery protocol for causal imbalance analysis.}
+  Chapter~\ref{ch:causality_intro} introduces a two-phase experimental protocol.
+  Phase~1 removes minority instances one step at a time using uniform random selection, ensuring no distributional bias so that performance drops are causally attributable to the imbalance ratio itself.
+  Phase~2 applies seven oversamplers incrementally from the most-degraded state to full balance.
+  The four-rule LeakageSafeCV protocol prevents the three forms of data leakage identified by Kaufman et al.~\cite{kaufman2012leakage}.
+
+  \item \textbf{Empirical causal evidence: imbalance degrades performance; recovery is incomplete.}
+  Chapter~\ref{ch:degradation} confirms that performance degrades monotonically across all five classifiers and six metrics, with a non-linear threshold at 40--50\% removal ($\IR \approx 2$).
+  Chapter~\ref{ch:recovery} shows that no oversampler achieves full recovery: the best methods (GVM-CO, KM-SMOTE) reach 98.4\% of the balanced AUC, leaving a residual gap of 1.4\% attributable to irreducible information loss.
+
+\end{enumerate}
+
+
+% ============================================================================
+\section{Answers to Research Questions}
+\label{sec:conc:rqs}
+
+\begin{table}[ht]
+\centering
+\caption{Answers to the seven research questions (RQ1--RQ7).}
+\label{tab:conc:rqs}
+\small
+\begin{tabular}{@{}p{0.7cm}p{12.5cm}@{}}
+\toprule
+\textbf{RQ} & \textbf{Answer} \\
+\midrule
+RQ1 & Composite $\Phi$ criterion raises mean AGTP by $+0.204$ vs.\ random seeds; downstream F1 $+0.025$, Sensitivity $+0.035$. PCA projection is essential (AGTP drops $-0.211$ without). \emph{(Ch.~\ref{ch:seed_selection})} \\[3pt]
+RQ2 & Disk-based generation yields F1 $+0.002$--$+0.013$ over SMOTE; largest gains at $\IR>9$ (LRE-CO $+0.018$). \emph{(Ch.~\ref{ch:proposed_methods}--\ref{ch:results})} \\[3pt]
+RQ3 & Friedman significant for G-Mean ($p=0.0002$) and BAcc ($p=0.0001$); not for F1 ($p=0.6251$) or AUC ($p=0.1139$). Study underpowered ($\approx30\%$) at $N=14$; need $N\geq45$ for 80\% power. SVM-SMOTE leads on G-Mean. \emph{(Ch.~\ref{ch:statistical})} \\[3pt]
+RQ4 & Seed selection is the dominant component ($+0.053$ F1; AGTP most important). K-means $>$ HAC. Optimal: $K=3$--$4$, $\kappa_{\max}=20$, $L=10$, $\tau=0.80$. Native-dimension mode $+0.002$--$+0.003$ F1 at high $d$. \emph{(Ch.~\ref{ch:ablation})} \\[3pt]
+RQ5 & \textbf{Yes.} Monotonic degradation with shape preserved; non-linear threshold at 40--50\% removal ($\IR\approx2$). \emph{(Ch.~\ref{ch:degradation})} \\[3pt]
+RQ6 & RF most robust ($\Delta$AUC $=0.191$); KNN/LR most sensitive. Hierarchy: RF$>$MLP$>$DT$>$LR$\approx$KNN. \emph{(Ch.~\ref{ch:degradation})} \\[3pt]
+RQ7 & No full recovery. GVM-CO $\approx$ KM-SMOTE ceiling: AUC 0.871 ($\Delta=-0.014$). Residual gap is irreducible when the surviving minority is sparse. \emph{(Ch.~\ref{ch:recovery}--\ref{ch:discussion})} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+% ============================================================================
+\section{Cross-Cutting Findings}
+\label{sec:conc:crosscutting}
+
+Three themes run through all works and emerge most clearly in their synthesis.
+
+\paragraph{1. LRE-CO is the most consistently robust circular oversampler.}
+Across 14 benchmark datasets, five classifiers, six metrics, and an independent causal recovery study, LRE-CO achieves the best or joint-best performance in the largest number of settings.
+Its Voronoi constraint (Equation~\eqref{eq:voronoi}) and certainty threshold ($\tau = 0.80$) prevent the boundary leakage that limits standard SMOTE and B-SMOTE.
+GVM-CO shows selective advantages at intermediate imbalance ratios and high-dimensional datasets; LS-CO provides stable mid-tier performance with low computational cost.
+
+\paragraph{2. Imbalance is a genuine cause of degradation, but the gap is irreducible.}
+The causal study (Part~IV) confirms that imbalance \emph{per se} degrades classifiers, not merely the confounds of distributional shift or reduced sample size.
+However, the recovery experiment reveals a fundamental limit: synthetic oversampling recovers 90--97\% of the balanced baseline, with a residual gap attributable to the inherent information loss when fewer real instances are available.
+This finding has a direct practical implication: at high imbalance ratios, the priority should shift from oversampling strategy to data collection, since no algorithm can overcome irreducible information loss.
+
+\paragraph{3. Leakage is quantifiable and consequential.}
+The LeakageSafeCV protocol prevents 2--5\% AUC inflation that would otherwise be attributable to oversampling leakage rather than genuine improvement.
+This effect is large enough to reverse the relative ranking of oversampling methods and to produce the false impression of statistical significance in underpowered studies.
+The protocol should be treated as a prerequisite for reproducible benchmarking in the oversampling literature.
+
+
+% ============================================================================
+\section{Limitations}
+\label{sec:conc:limitations}
+
+\paragraph{Circular oversampling (Parts~II--III).}
+The PCA projection discards information above two dimensions; native-dimension mode avoids this but requires Von Mises--Fisher approximation whose accuracy degrades in very high dimensions ($d > 100$).
+Hyperparameter tuning ($K$, $\kappa_{\max}$, $L$, $\tau$) adds complexity; the optimistic-bias disclosure (Chapter~\ref{ch:experimental_setup}) acknowledges that reported numbers reflect tuned configurations.
+The benchmark is limited to 14 datasets; statistical power is insufficient ($\approx 30\%$) for rank-2 effect detection.
+
+\paragraph{Causality study (Part~IV).}
+Random removal is inherently stochastic; different random sequences may produce slightly different degradation curves. We mitigate this with five-fold cross-validation and averaging, but exact removal order effects are not characterized.
+Synthetic dataset analogues replace unavailable KEEL/UCI files; qualitative conclusions are expected to generalise but exact numbers may differ.
+The study covers only $\IR \leq 4$; behavior at extreme imbalance ($\IR > 10$) is not characterized.
+Only binary classification is studied.
+
+
+% ============================================================================
+\section{Future Work}
+\label{sec:conc:future}
+
+\paragraph{Circular oversampling.}
+\begin{itemize}[leftmargin=*]
+  \item Extend evaluation to $N \geq 45$ datasets to achieve 80\% statistical power for rank-2 effect detection.
+  \item Investigate the native-dimension Von Mises--Fisher approximation at $d > 100$ and develop a more accurate high-dimensional direction sampler.
+  \item Apply LRE-CO and GVM-CO to multi-class imbalance using one-vs-rest decomposition.
+  \item Combine the circular framework with deep generative models (CTGAN, TVAE) to handle tabular data with complex dependencies.
+\end{itemize}
+
+\paragraph{Causal study extensions.}
+\begin{itemize}[leftmargin=*]
+  \item Extend the degradation sweep to $\IR$ up to 50 to characterize the full performance curve at extreme imbalance~\cite{he2009learning}.
+  \item Validate on real KEEL/UCI datasets with matching $(n, d)$ to confirm the synthetic-analogue findings~\cite{fernandez2018learning}.
+  \item Investigate multi-class imbalance, where the interaction between ratios across classes adds complexity not addressed here~\cite{haixiang2017learning}.
+  \item Design an oversampler that explicitly targets the irreducible information-loss gap using uncertainty quantification, prioritising synthesis in the most uncertain minority regions~\cite{he2008adasyn}.
+\end{itemize}
+
+\paragraph{Unified future direction.}
+The most promising synthesis is an adaptive oversampling system that uses distributional monitoring (via the Bhattacharyya Coefficient) to continuously assess minority-class coverage in production data streams, triggering targeted data collection or adaptive oversampling when coverage drops below a threshold.
+GVM-CO provides the synthesis engine; the causal study quantifies the performance recovery achievable at each coverage level.
+Together, they form a closed-loop framework for managing class imbalance in live systems.

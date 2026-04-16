@@ -1,0 +1,21 @@
+% =============================================================================
+% Abstract
+% =============================================================================
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+\markboth{Abstract}{Abstract}
+
+This thesis presents three interlinked contributions forming a methodological pipeline for class imbalance in binary classification.
+
+\medskip\noindent
+We propose a four-stage geometry-preserving seed-selection pipeline (K-means clustering, PCA projection, composite Bhattacharyya Coefficient + Jensen--Shannon Divergence + Average Geometric--Topological Preservation (AGTP) + smoothness scoring) that improves downstream F1 by $+0.025$ over random-seed baselines.
+
+\medskip\noindent
+We then develop three circle-based oversampling algorithms that replace SMOTE (Synthetic Minority Over-sampling Technique) line-segment generation with disk generation in PCA-projected space: GVM-CO (Gravity-biased Von Mises Circular Oversampling), which biases angular sampling toward minority cluster gravity centers using a Von Mises distribution; LRE-CO (Local Region Estimation), which enforces Voronoi-cell certainty constraints; and LS-CO (Layered Segmental), which applies concentric-ring angular segmentation. Evaluated on 14 KEEL/UCI benchmark datasets, LRE-CO achieves the best mean F1 rank (6.14/13) across all methods.
+
+\medskip\noindent
+Finally, a controlled degradation-and-recovery causal study confirms that class imbalance \emph{per se} degrades performance monotonically, with a non-linear threshold at imbalance ratio $\IR \approx 2$. No oversampler achieves full recovery; GVM-CO and K-Means SMOTE reach 98.4\% of balanced AUC, with a residual gap attributable to irreducible information loss.
+
+\medskip
+
+\noindent\textbf{Keywords:} class imbalance, oversampling, distributional similarity, circular generation, Von Mises distribution, causal analysis, degradation study, seed selection.

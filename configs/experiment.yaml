@@ -1,0 +1,176 @@
+# Full experiment matrix configuration
+# ======================================
+
+random_state: 42
+output_dir: "results"
+
+# --- Datasets ---
+datasets:
+  keel_uci:
+    - ecoli1
+    - ecoli2
+    - ecoli3
+    - glass1
+    - glass4
+    - yeast1
+    - yeast3
+    - new-thyroid1
+    - haberman
+    - vehicle0
+    - pima
+    - wisconsin
+    - heart
+    - ionosphere
+
+# --- Seed Selection ---
+seed_strategies:
+  - name: "custom"
+    params:
+      n_candidates: 100
+      n_pcs: 2
+      k_clusters: 5
+      k_topo: 5
+      z_weight: 0.5
+  - name: "gaussian"
+    params:
+      method: "random"
+
+# --- Proposed Methods ---
+proposed_methods:
+  # Algorithm 1: Gravity Von Mises
+  - name: "gravity_vonmises_km_A"
+    class: "gravity_vonmises"
+    params:
+      K: 3
+      kappa_max: 20.0
+      gamma: 2.0
+      alpha: 0.6
+      clustering_method: "kmeans"
+      cross_cluster: false
+  - name: "gravity_vonmises_km_B"
+    class: "gravity_vonmises"
+    params:
+      K: 3
+      kappa_max: 20.0
+      gamma: 2.0
+      alpha: 0.6
+      clustering_method: "kmeans"
+      cross_cluster: true    # Border restriction
+  - name: "gravity_vonmises_hac_A"
+    class: "gravity_vonmises"
+    params:
+      K: 3
+      kappa_max: 20.0
+      gamma: 2.0
+      alpha: 0.6
+      clustering_method: "hac"
+      cross_cluster: false
+  - name: "gravity_vonmises_hac_B"
+    class: "gravity_vonmises"
+    params:
+      K: 3
+      kappa_max: 20.0
+      gamma: 2.0
+      alpha: 0.6
+      clustering_method: "hac"
+      cross_cluster: true
+
+  # Algorithm 2: Local Regions
+  - name: "local_regions_km"
+    class: "local_regions"
+    params:
+      k_seed: 10
+      local_k_max: 6
+      beta: 1.7
+      certainty_threshold: 0.80
+      clustering_method: "kmeans"
+  - name: "local_regions_hac"
+    class: "local_regions"
+    params:
+      k_seed: 10
+      local_k_max: 6
+      beta: 1.7
+      certainty_threshold: 0.80
+      clustering_method: "hac"
+
+  # Algorithm 3: Layered Segmental
+  - name: "layered_segmental_generic"
+    class: "layered_segmental"
+    params:
+      n_layers: 60
+      sigma: 0.03
+      ang_std: 0.05
+      cluster_based: false
+  - name: "layered_segmental_km"
+    class: "layered_segmental"
+    params:
+      n_layers: 60
+      sigma: 0.03
+      ang_std: 0.05
+      cluster_based: true
+      K: 3
+      clustering_method: "kmeans"
+  - name: "layered_segmental_hac"
+    class: "layered_segmental"
+    params:
+      n_layers: 60
+      sigma: 0.03
+      ang_std: 0.05
+      cluster_based: true
+      K: 3
+      clustering_method: "hac"
+
+  # Benchmark
+  - name: "circular_smote"
+    class: "circular_smote"
+    params:
+      k: 5
+
+# --- Baseline Methods ---
+baselines:
+  - "none"
+  - "ros"
+  - "smote"
+  - "borderline_smote"
+  - "adasyn"
+  - "svm_smote"
+  - "kmeans_smote"
+
+# --- Denoising ablation ---
+denoise_methods:
+  - null        # No denoising
+  - "tomek"
+  - "enn"
+
+# --- Classifiers ---
+classifiers:
+  - "knn"
+  - "decision_tree"
+  - "svm_rbf"
+  - "naive_bayes"
+  - "mlp"
+  - "logistic_regression"
+  - "random_forest"
+
+# --- Evaluation ---
+evaluation:
+  cv_folds: 5
+  report_median: true
+  metrics:
+    - "auc"
+    - "g_mean"
+    - "f_measure"
+    - "balanced_accuracy"
+    - "precision"
+    - "sensitivity"
+
+# --- Statistical Tests ---
+statistical_tests:
+  alpha: 0.05
+  tests:
+    - "friedman"
+    - "holm"
+    - "nemenyi"
+
+# --- K optimization for KNN in algorithms ---
+k_grid: [3, 5, 7, 9, 11]
