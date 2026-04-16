@@ -1,8 +1,8 @@
 # Circular Oversampling for Imbalanced Classification
 
-**Master's Thesis — Università degli Studi di Milano, 2025**
+**Master's Thesis, Università degli Studi di Milano, 2025**
 
-*From Distributional Similarity to Causal Imbalance: Circular Oversampling, Seed Selection, and a Controlled Degradation Study*
+*Circular Oversampling, Seed Selection, and a Controlled Degradation Study*
 
 **Author:** Parsa Hajiannejad
 
