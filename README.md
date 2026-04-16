@@ -14,9 +14,9 @@ This thesis proposes three circle-based oversampling algorithms for imbalanced b
 
 **Key contributions:**
 - **Geometry-preserving seed selection** using the Bhattacharyya Coefficient, AGTP, JSD, and smoothness regularization
-- **GVM-CO** — Gravity-biased Von Mises Circular Oversampling
-- **LRE-CO** — Local Region Estimation Circular Oversampling (Voronoi-constrained)
-- **LS-CO** — Layered Segmental Circular Oversampling
+- **GVM-CO** : Gravity-biased Von Mises Circular Oversampling
+- **LRE-CO** : Local Region Estimation Circular Oversampling (Voronoi-constrained)
+- **LS-CO** : Layered Segmental Circular Oversampling
 - **Controlled degradation-recovery protocol** for causal imbalance analysis
 
 ## Repository Structure
